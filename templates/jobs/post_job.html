@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Post a Job | JobBoard{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-8">
+        <h1 class="text-3xl font-bold mb-8">Post a New Job</h1>
+        
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            
+            <div>
+                <label for="title" class="block text-sm font-medium mb-2">Job Title</label>
+                <input type="text" id="title" name="title" required placeholder="e.g., Senior Python Developer" 
+                       class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-600">
+            </div>
+            
+            <div>
+                <label for="description" class="block text-sm font-medium mb-2">Job Description</label>
+                <textarea id="description" name="description" required rows="8" placeholder="Describe the role, responsibilities, and requirements..." 
+                          class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-600"></textarea>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="job_type" class="block text-sm font-medium mb-2">Job Type</label>
+                    <select id="job_type" name="job_type" required 
+                            class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-600">
+                        <option value="">Select job type</option>
+                        <option value="full_time">Full-time</option>
+                        <option value="part_time">Part-time</option>
+                        <option value="contract">Contract</option>
+                        <option value="freelance">Freelance</option>
+                        <option value="internship">Internship</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label for="experience_level" class="block text-sm font-medium mb-2">Experience Level</label>
+                    <select id="experience_level" name="experience_level" required 
+                            class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-600">
+                        <option value="">Select level</option>
+                        <option value="entry">Entry Level</option>
+                        <option value="mid">Mid Level</option>
+                        <option value="senior">Senior</option>
+                        <option value="lead">Lead</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="location" class="block text-sm font-medium mb-2">Location</label>
+                    <input type="text" id="location" name="location" required placeholder="e.g., San Francisco, CA" 
+                           class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-600">
+                </div>
+                
+                <div class="flex items-end">
+                    <label class="flex items-center gap-2">
+                        <input type="checkbox" id="is_remote" name="is_remote" class="rounded">
+                        <span class="font-medium">Remote Job</span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="salary_min" class="block text-sm font-medium mb-2">Minimum Salary</label>
+                    <input type="number" id="salary_min" name="salary_min" placeholder="50000" 
+                           class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-600">
+                </div>
+                
+                <div>
+                    <label for="salary_max" class="block text-sm font-medium mb-2">Maximum Salary</label>
+                    <input type="number" id="salary_max" name="salary_max" placeholder="100000" 
+                           class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-600">
+                </div>
+            </div>
+            
+            <div>
+                <label for="required_skills" class="block text-sm font-medium mb-2">Required Skills (comma-separated)</label>
+                <input type="text" id="required_skills" name="required_skills" required placeholder="Python, Django, PostgreSQL, Docker" 
+                       class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-600">
+            </div>
+            
+            <div class="flex gap-4">
+                <button type="submit" class="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-lg hover:from-indigo-700 hover:to-purple-700 transition">
+                    Post Job
+                </button>
+                <a href="/" class="flex-1 px-6 py-3 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white font-bold rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition text-center">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Candidate Dashboard | JobBoard{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <div class="flex justify-between items-center">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Welcome, {{ user.first_name|default:user.email }}</h1>
+        <a href="{% url 'jobs_views:job_list' %}" class="px-6 py-3 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition shadow-sm">
+            Find New Jobs
+        </a>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
+            <p class="text-gray-600 dark:text-gray-400 text-sm mb-1">Applications</p>
+            <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ applications_count }}</p>
+        </div>
+        <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
+            <p class="text-gray-600 dark:text-gray-400 text-sm mb-1">Saved Jobs</p>
+            <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ saved_jobs_count }}</p>
+        </div>
+        <!-- Add more stats if needed -->
+    </div>
+
+    <!-- Recent Applications -->
+    <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+        <div class="p-6 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center">
+            <h2 class="text-xl font-bold">Recent Applications</h2>
+            <a href="{% url 'applications_views:my_applications' %}" class="text-indigo-600 hover:text-indigo-700 text-sm font-medium">View All</a>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="bg-gray-50 dark:bg-gray-800/50 text-gray-600 dark:text-gray-400 text-sm uppercase">
+                        <th class="px-6 py-4 font-semibold">Job Title</th>
+                        <th class="px-6 py-4 font-semibold">Company</th>
+                        <th class="px-6 py-4 font-semibold">Date Applied</th>
+                        <th class="px-6 py-4 font-semibold">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 dark:divide-gray-800">
+                    {% for app in recent_applications %}
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
+                            <td class="px-6 py-4">
+                                <a href="{% url 'jobs_views:job_detail' app.job.slug %}" class="font-semibold text-gray-900 dark:text-white hover:text-indigo-600">
+                                    {{ app.job.title }}
+                                </a>
+                            </td>
+                            <td class="px-6 py-4 text-gray-600 dark:text-gray-400">{{ app.job.employer.company_name }}</td>
+                            <td class="px-6 py-4 text-sm">{{ app.created_at|date:"M d, Y" }}</td>
+                            <td class="px-6 py-4">
+                                <span class="px-3 py-1 text-xs font-bold rounded-full 
+                                    {% if app.status == 'applied' %}bg-blue-100 text-blue-700
+                                    {% elif app.status == 'reviewing' %}bg-yellow-100 text-yellow-700
+                                    {% elif app.status == 'interviewing' %}bg-purple-100 text-purple-700
+                                    {% elif app.status == 'hired' %}bg-green-100 text-green-700
+                                    {% elif app.status == 'rejected' %}bg-red-100 text-red-700
+                                    {% endif %}">
+                                    {{ app.get_status_display }}
+                                </span>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="4" class="px-6 py-8 text-center text-gray-500">You haven't applied to any jobs yet.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

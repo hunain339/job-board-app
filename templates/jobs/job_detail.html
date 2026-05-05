@@ -1,0 +1,282 @@
+{% extends "base.html" %}
+{% load static %}
+{% load core_tags %}
+
+{% block title %}{{ job.title }} | JobBoard{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Main Content -->
+    <div class="lg:col-span-2 space-y-8">
+        <!-- Job Header -->
+        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-8 shadow-sm">
+            <div class="flex justify-between items-start mb-6">
+                <div>
+                    <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-2">{{ job.title }}</h1>
+                    <p class="text-lg text-indigo-600 font-medium hover:underline cursor-pointer">{{ job.employer.company_name|default:job.employer.email }}</p>
+                </div>
+                <span class="px-4 py-2 text-sm font-bold bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 rounded-full">
+                    {{ job.get_job_type_display }}
+                </span>
+            </div>
+            
+            <!-- Meta Info -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 py-6 border-t border-b border-gray-200 dark:border-gray-800">
+                <div class="text-center">
+                    <p class="text-gray-600 dark:text-gray-400 text-sm">Location</p>
+                    <p class="font-semibold">{{ job.location }}</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-gray-600 dark:text-gray-400 text-sm">Experience</p>
+                    <p class="font-semibold">{{ job.get_experience_level_display }}</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-gray-600 dark:text-gray-400 text-sm">Salary</p>
+                    <p class="font-semibold">{{ job.salary_range }}</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-gray-600 dark:text-gray-400 text-sm">Remote</p>
+                    <p class="font-semibold">{% if job.is_remote %}Yes{% else %}No{% endif %}</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Job Description -->
+        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-8 shadow-sm">
+            <h2 class="text-2xl font-bold mb-4">Description</h2>
+            <div class="text-gray-700 dark:text-gray-300 prose dark:prose-invert max-w-none">
+                {{ job.description|linebreaks }}
+            </div>
+        </div>
+        
+        <!-- Required Skills -->
+        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-8 shadow-sm">
+            <h2 class="text-2xl font-bold mb-4">Required Skills</h2>
+            <div class="flex flex-wrap gap-3">
+                {% for skill in job.required_skills|split:"," %}
+                    <span class="px-4 py-2 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 rounded-lg font-medium">
+                        {{ skill|trim }}
+                    </span>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="lg:col-span-1 space-y-6">
+        <!-- Apply Button -->
+        {% if user.is_authenticated %}
+            {% if user_is_candidate %}
+                <div class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-2xl p-8 text-center shadow-lg">
+                    <p class="text-sm mb-4">Ready to apply?</p>
+                    <button onclick="openApplyModal()" class="w-full px-6 py-3 bg-white text-indigo-600 font-bold rounded-lg hover:bg-gray-100 transition mb-4 shadow-sm">
+                        Apply Now
+                    </button>
+                    <button id="save-job-btn" onclick="toggleSaveJob()" class="w-full px-6 py-3 border border-white text-white font-bold rounded-lg hover:bg-white/10 transition">
+                        <i class="fas fa-bookmark mr-2"></i> <span>Save Job</span>
+                    </button>
+                </div>
+            {% else %}
+                <div class="bg-gray-100 dark:bg-gray-800 rounded-2xl p-8 text-center border border-gray-200 dark:border-gray-700">
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Log in as a candidate to apply</p>
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-2xl p-8 text-center shadow-lg">
+                <p class="mb-4">Sign in to apply</p>
+                <a href="{% url 'users_views:login' %}" class="w-full px-6 py-3 bg-white text-indigo-600 font-bold rounded-lg hover:bg-gray-100 transition block shadow-sm">
+                    Sign In
+                </a>
+            </div>
+        {% endif %}
+        
+        <!-- Company Info -->
+        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-8 shadow-sm">
+            <h3 class="text-lg font-bold mb-4">About the Company</h3>
+            {% if job.employer.company_logo %}
+                <img src="{{ job.employer.company_logo.url }}" alt="{{ job.employer.company_name }}" class="w-full h-40 object-cover rounded-lg mb-4">
+            {% endif %}
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">{{ job.employer.company_description }}</p>
+            {% if job.employer.company_website %}
+                <a href="{{ job.employer.company_website }}" target="_blank" class="text-indigo-600 hover:text-indigo-700 font-medium">
+                    Visit Website <i class="fas fa-external-link-alt"></i>
+                </a>
+            {% endif %}
+        </div>
+
+        <!-- Job Stats -->
+        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-8 shadow-sm">
+            <div class="space-y-4 text-sm">
+                <div class="flex justify-between">
+                    <span class="text-gray-600 dark:text-gray-400">Views</span>
+                    <span class="font-semibold">{{ job.views_count }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600 dark:text-gray-400">Applications</span>
+                    <span class="font-semibold">{{ job.applications_count }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600 dark:text-gray-400">Posted</span>
+                    <span class="font-semibold">{{ job.created_at|date:"M d, Y" }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Share -->
+        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-8 shadow-sm">
+            <h3 class="font-bold mb-4">Share This Job</h3>
+            <div class="flex gap-2">
+                <a href="#" class="flex-1 px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-center text-sm">
+                    <i class="fab fa-twitter"></i>
+                </a>
+                <a href="#" class="flex-1 px-3 py-2 bg-blue-700 text-white rounded-lg hover:bg-blue-800 text-center text-sm">
+                    <i class="fab fa-linkedin"></i>
+                </a>
+                <button onclick="copyToClipboard()" class="flex-1 px-3 py-2 bg-gray-300 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-400 dark:hover:bg-gray-600 text-sm">
+                    <i class="fas fa-link"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Related Jobs -->
+{% if related_jobs %}
+    <div class="mt-16">
+        <h2 class="text-3xl font-bold mb-8 text-gray-900 dark:text-white">Similar Jobs</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {% for related_job in related_jobs %}
+                <a href="{% url 'jobs_views:job_detail' related_job.slug %}" class="group bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 hover:shadow-lg transition">
+                    <h3 class="font-bold text-gray-900 dark:text-white group-hover:text-indigo-600 transition mb-2">{{ related_job.title }}</h3>
+                    <p class="text-sm text-indigo-600 mb-3">{{ related_job.employer.company_name }}</p>
+                    <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                        <i class="fas fa-map-pin text-indigo-500"></i> {{ related_job.location }}
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+{% endif %}
+
+<!-- Apply Modal -->
+<div id="apply-modal" class="fixed inset-0 z-[60] hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeApplyModal()"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block align-bottom bg-white dark:bg-gray-900 rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full p-8 border border-gray-200 dark:border-gray-800">
+            <div class="mb-6">
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-white" id="modal-title">Apply for {{ job.title }}</h3>
+                <p class="text-gray-600 dark:text-gray-400 text-sm mt-1">Submit your application to {{ job.employer.company_name }}</p>
+            </div>
+            
+            <form id="apply-form" class="space-y-6">
+                {% csrf_token %}
+                <input type="hidden" name="job_id" value="{{ job.id }}">
+                
+                <div>
+                    <label for="resume" class="block text-sm font-medium mb-2">Resume (PDF, DOCX)</label>
+                    <input type="file" id="resume" name="resume" required 
+                           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-600">
+                </div>
+                
+                <div>
+                    <label for="cover_letter" class="block text-sm font-medium mb-2">Cover Letter</label>
+                    <textarea id="cover_letter" name="cover_letter" rows="4"
+                              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                              placeholder="Tell the employer why you're a good fit..."></textarea>
+                </div>
+                
+                <div class="flex gap-4">
+                    <button type="button" onclick="closeApplyModal()" class="flex-1 px-6 py-3 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition font-medium">
+                        Cancel
+                    </button>
+                    <button type="submit" class="flex-1 px-6 py-3 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition shadow-sm">
+                        Submit Application
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+const jobId = "{{ job.id }}";
+const jobSlug = "{{ job.slug }}";
+const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+function copyToClipboard() {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url).then(() => {
+        alert('Job link copied to clipboard!');
+    });
+}
+
+function openApplyModal() {
+    document.getElementById('apply-modal').classList.remove('hidden');
+}
+
+function closeApplyModal() {
+    document.getElementById('apply-modal').classList.add('hidden');
+}
+
+document.getElementById('apply-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    
+    try {
+        const response = await fetch('/api/applications/', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': csrftoken
+            }
+        });
+        
+        const data = await response.json();
+        if (response.status === 201) {
+            alert('Application submitted successfully!');
+            closeApplyModal();
+            location.reload(); // Refresh to update application count
+        } else {
+            alert('Error: ' + (data.detail || JSON.stringify(data)));
+        }
+    } catch (error) {
+        console.error('Error submitting application:', error);
+        alert('An unexpected error occurred.');
+    }
+});
+
+async function toggleSaveJob() {
+    const btn = document.getElementById('save-job-btn');
+    const span = btn.querySelector('span');
+    const isSaved = span.innerText === 'Unsave Job';
+    
+    const url = `/api/jobs/${jobSlug}/${isSaved ? 'unsave' : 'save'}/`;
+    
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            if (isSaved) {
+                span.innerText = 'Save Job';
+                btn.classList.remove('bg-white/20');
+            } else {
+                span.innerText = 'Unsave Job';
+                btn.classList.add('bg-white/20');
+            }
+        } else {
+            const data = await response.json();
+            alert('Error: ' + (data.detail || 'Could not update saved job status.'));
+        }
+    } catch (error) {
+        console.error('Error toggling save job:', error);
+    }
+}
+</script>
+{% endblock %}
