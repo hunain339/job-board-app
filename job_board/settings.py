@@ -284,6 +284,13 @@ if not DEBUG:
         'style-src': ("'self'", "'unsafe-inline'", "cdn.tailwindcss.com"),
         'img-src': ("'self'", "data:", "https:"),
     }
+    # Trust X-Forwarded-Proto header from reverse proxy (e.g., Nginx)
+    SECURE_PROXY_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+else:
+    # Development: Disable SSL requirements
+    SECURE_SSL_REDIRECT = False
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
 
 # ============================================================================
 # PAGINATION & FILTERING
