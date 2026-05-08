@@ -8,85 +8,111 @@
     <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-8">
         <h1 class="text-3xl font-bold mb-8">Post a New Job</h1>
         
+        {% if form.errors %}
+            <div class="mb-6 p-4 bg-red-50 border border-red-200 text-red-800 rounded-lg">
+                <p class="font-bold mb-2">Please fix the following errors:</p>
+                <ul class="list-disc list-inside">
+                    {% for field, errors in form.errors.items %}
+                        {% for error in errors %}
+                            <li>{{ field|title }}: {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
         <form method="post" class="space-y-6">
             {% csrf_token %}
             
             <div>
                 <label for="title" class="block text-sm font-medium mb-2">Job Title</label>
-                <input type="text" id="title" name="title" required placeholder="e.g., Senior Python Developer" 
+                <input type="text" id="title" name="title" required placeholder="e.g., Senior Python Developer" value="{{ form.title.value|default:'' }}"
                        class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-600">
             </div>
             
-            <div>
-                <label for="description" class="block text-sm font-medium mb-2">Job Description</label>
-                <textarea id="description" name="description" required rows="8" placeholder="Describe the role, responsibilities, and requirements..." 
-                          class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-600"></textarea>
-            </div>
-            
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="category" class="block text-sm font-medium mb-2">Category</label>
+                    <select id="category" name="category" required 
+                            class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-600">
+                        <option value="">Select category</option>
+                        {% for category in categories %}
+                            <option value="{{ category.id }}" {% if form.category.value|stringformat:"s" == category.id|stringformat:"s" %}selected{% endif %}>{{ category.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
                 <div>
                     <label for="job_type" class="block text-sm font-medium mb-2">Job Type</label>
                     <select id="job_type" name="job_type" required 
                             class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-600">
                         <option value="">Select job type</option>
-                        <option value="full_time">Full-time</option>
-                        <option value="part_time">Part-time</option>
-                        <option value="contract">Contract</option>
-                        <option value="freelance">Freelance</option>
-                        <option value="internship">Internship</option>
+                        <option value="full_time" {% if form.job_type.value == 'full_time' %}selected{% endif %}>Full-time</option>
+                        <option value="part_time" {% if form.job_type.value == 'part_time' %}selected{% endif %}>Part-time</option>
+                        <option value="contract" {% if form.job_type.value == 'contract' %}selected{% endif %}>Contract</option>
+                        <option value="freelance" {% if form.job_type.value == 'freelance' %}selected{% endif %}>Freelance</option>
+                        <option value="internship" {% if form.job_type.value == 'internship' %}selected{% endif %}>Internship</option>
                     </select>
                 </div>
-                
+            </div>
+
+            <div>
+                <label for="description" class="block text-sm font-medium mb-2">Job Description</label>
+                <textarea id="description" name="description" required rows="8" placeholder="Describe the role, responsibilities, and requirements..." 
+                          class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-600">{{ form.description.value|default:'' }}</textarea>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label for="experience_level" class="block text-sm font-medium mb-2">Experience Level</label>
                     <select id="experience_level" name="experience_level" required 
                             class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-600">
                         <option value="">Select level</option>
-                        <option value="entry">Entry Level</option>
-                        <option value="mid">Mid Level</option>
-                        <option value="senior">Senior</option>
-                        <option value="lead">Lead</option>
+                        <option value="entry" {% if form.experience_level.value == 'entry' %}selected{% endif %}>Entry Level</option>
+                        <option value="mid" {% if form.experience_level.value == 'mid' %}selected{% endif %}>Mid Level</option>
+                        <option value="senior" {% if form.experience_level.value == 'senior' %}selected{% endif %}>Senior</option>
+                        <option value="lead" {% if form.experience_level.value == 'lead' %}selected{% endif %}>Lead</option>
                     </select>
+                </div>
+                
+                <div>
+                    <label for="location" class="block text-sm font-medium mb-2">Location</label>
+                    <input type="text" id="location" name="location" required placeholder="e.g., San Francisco, CA" value="{{ form.location.value|default:'' }}"
+                           class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-600">
                 </div>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label for="location" class="block text-sm font-medium mb-2">Location</label>
-                    <input type="text" id="location" name="location" required placeholder="e.g., San Francisco, CA" 
-                           class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-600">
-                </div>
-                
-                <div class="flex items-end">
-                    <label class="flex items-center gap-2">
-                        <input type="checkbox" id="is_remote" name="is_remote" class="rounded">
+                <div class="flex items-center pt-8">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" id="is_remote" name="is_remote" class="rounded text-indigo-600 focus:ring-indigo-600" {% if form.is_remote.value %}checked{% endif %}>
                         <span class="font-medium">Remote Job</span>
                     </label>
+                </div>
+                
+                <div>
+                    <label for="required_skills" class="block text-sm font-medium mb-2">Required Skills (comma-separated)</label>
+                    <input type="text" id="required_skills" name="required_skills" required placeholder="Python, Django, PostgreSQL, Docker" value="{{ form.required_skills.value|default:'' }}"
+                           class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-600">
                 </div>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label for="salary_min" class="block text-sm font-medium mb-2">Minimum Salary</label>
-                    <input type="number" id="salary_min" name="salary_min" placeholder="50000" 
+                    <input type="number" id="salary_min" name="salary_min" placeholder="50000" value="{{ form.salary_min.value|default:'' }}"
                            class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-600">
                 </div>
                 
                 <div>
                     <label for="salary_max" class="block text-sm font-medium mb-2">Maximum Salary</label>
-                    <input type="number" id="salary_max" name="salary_max" placeholder="100000" 
+                    <input type="number" id="salary_max" name="salary_max" placeholder="100000" value="{{ form.salary_max.value|default:'' }}"
                            class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-600">
                 </div>
             </div>
             
-            <div>
-                <label for="required_skills" class="block text-sm font-medium mb-2">Required Skills (comma-separated)</label>
-                <input type="text" id="required_skills" name="required_skills" required placeholder="Python, Django, PostgreSQL, Docker" 
-                       class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-600">
-            </div>
-            
-            <div class="flex gap-4">
-                <button type="submit" class="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-lg hover:from-indigo-700 hover:to-purple-700 transition">
+            <div class="flex gap-4 pt-4">
+                <button type="submit" class="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-lg hover:from-indigo-700 hover:to-purple-700 shadow-lg shadow-indigo-200 dark:shadow-none transition-all active:scale-[0.98]">
                     Post Job
                 </button>
                 <a href="/" class="flex-1 px-6 py-3 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white font-bold rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition text-center">
