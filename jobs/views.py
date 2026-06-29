@@ -5,28 +5,48 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
-from django.shortcuts import get_object_or_404
-from django.db.models import Q
+from django.core.cache import cache
+from django.db.models import Exists, OuterRef, Q
+
 from .models import Job, JobCategory, JobSavedByUser
 from .serializers import (
     JobListSerializer, JobDetailSerializer, JobCreateUpdateSerializer,
     JobCategorySerializer, JobSavedByUserSerializer
 )
-from core.permissions import IsEmployer, IsApprovedEmployer, IsEmployerOwner
+from core.permissions import IsApprovedEmployer, IsEmployerOwner
+from .services import (
+    JOB_CATEGORIES_CACHE_KEY,
+    create_job,
+    increment_job_views,
+    save_job_for_candidate,
+    soft_delete_job,
+    unsave_job_for_candidate,
+    update_job,
+)
 
 
 class JobCategoryViewSet(viewsets.ReadOnlyModelViewSet):
-    """ViewSet for job categories."""
-    
+    """ViewSet for job categories with caching."""
+
     queryset = JobCategory.objects.all()
     serializer_class = JobCategorySerializer
     permission_classes = [AllowAny]
     lookup_field = 'slug'
 
+    def list(self, request, *args, **kwargs):
+        """Cache category list."""
+        cached = cache.get(JOB_CATEGORIES_CACHE_KEY)
+        if cached:
+            return Response(cached)
+
+        response = super().list(request, *args, **kwargs)
+        cache.set(JOB_CATEGORIES_CACHE_KEY, response.data, 3600)
+        return response
+
 
 class JobViewSet(viewsets.ModelViewSet):
-    """ViewSet for job postings."""
-    
+    """ViewSet for job postings with query optimization."""
+
     queryset = Job.objects.filter(is_active=True)
     permission_classes = [AllowAny]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
@@ -35,7 +55,7 @@ class JobViewSet(viewsets.ModelViewSet):
     ordering_fields = ['created_at', 'salary_min', 'applications_count', 'views_count']
     ordering = ['-created_at']
     lookup_field = 'slug'
-    
+
     def get_serializer_class(self):
         """Return appropriate serializer based on action."""
         if self.action == 'list':
@@ -43,7 +63,7 @@ class JobViewSet(viewsets.ModelViewSet):
         elif self.action in ['create', 'update', 'partial_update']:
             return JobCreateUpdateSerializer
         return JobDetailSerializer
-    
+
     def get_permissions(self):
         """Set permissions based on action."""
         if self.action in ['list', 'retrieve']:
@@ -51,67 +71,77 @@ class JobViewSet(viewsets.ModelViewSet):
         if self.action == 'create':
             return [IsApprovedEmployer()]
         if self.action in ['update', 'partial_update', 'destroy']:
-            return [IsAuthenticated()]
+            return [IsAuthenticated(), IsEmployerOwner()]
         return [IsAuthenticated()]
-    
+
     def get_queryset(self):
-        """Filter queryset."""
-        queryset = Job.objects.all()
-        
+        """Filter and optimize queryset to prevent N+1 queries."""
+        # Start with select_related for direct foreign keys
+        queryset = (
+            Job.objects.select_related('employer', 'category')
+        )
+
         # Non-authenticated users see only active jobs
         if not self.request.user.is_authenticated:
             return queryset.filter(is_active=True)
-        
+
         # Employers see their own jobs (active or not) + all active jobs
         if self.request.user.role == 'employer':
-            return queryset.filter(
+            queryset = queryset.filter(
                 Q(is_active=True) | Q(employer=self.request.user)
             )
-        
-        return queryset.filter(is_active=True)
-    
+        else:
+            queryset = queryset.filter(is_active=True)
+
+        if self.request.user.role == 'candidate':
+            # Use Prefetch instead of annotation to avoid N+1
+            saved_jobs = JobSavedByUser.objects.filter(
+                candidate=self.request.user,
+                job=OuterRef('pk'),
+            )
+            queryset = queryset.annotate(is_saved=Exists(saved_jobs))
+
+        return queryset
+
     def retrieve(self, request, *args, **kwargs):
-        """Retrieve job and increment view count."""
+        """Retrieve job and atomically increment view count."""
         job = self.get_object()
-        job.views_count += 1
-        job.save(update_fields=['views_count'])
-        
-        return super().retrieve(request, *args, **kwargs)
-    
+
+        increment_job_views(job=job)
+
+        serializer = self.get_serializer(job)
+        return Response(serializer.data)
+
     def perform_create(self, serializer):
         """Create job with current user as employer."""
-        serializer.save(employer=self.request.user)
-    
+        create_job(employer=self.request.user, **serializer.validated_data)
+
     def perform_update(self, serializer):
         """Update job if user is employer."""
         job = self.get_object()
         if job.employer != self.request.user:
             self.permission_denied(self.request)
-        serializer.save()
-    
+        update_job(job=job, **serializer.validated_data)
+
     def perform_destroy(self, instance):
         """Soft delete job."""
         if instance.employer != self.request.user:
             self.permission_denied(self.request)
-        instance.is_active = False
-        instance.save()
-    
+        soft_delete_job(job=instance)
+
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def save(self, request, slug=None):
         """Save job for later."""
         job = self.get_object()
-        
+
         if request.user.role != 'candidate':
             return Response(
                 {'detail': 'Only candidates can save jobs.'},
                 status=status.HTTP_403_FORBIDDEN
             )
-        
-        saved, created = JobSavedByUser.objects.get_or_create(
-            candidate=request.user,
-            job=job
-        )
-        
+
+        saved, created = save_job_for_candidate(candidate=request.user, job=job)
+
         if created:
             return Response(
                 {'detail': 'Job saved successfully.'},
@@ -121,30 +151,27 @@ class JobViewSet(viewsets.ModelViewSet):
             {'detail': 'Job already saved.'},
             status=status.HTTP_200_OK
         )
-    
+
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def unsave(self, request, slug=None):
         """Unsave job."""
         job = self.get_object()
-        
+
         if request.user.role != 'candidate':
             return Response(
                 {'detail': 'Only candidates can unsave jobs.'},
                 status=status.HTTP_403_FORBIDDEN
             )
-        
-        deleted_count, _ = JobSavedByUser.objects.filter(
-            candidate=request.user,
-            job=job
-        ).delete()
-        
+
+        deleted_count, _ = unsave_job_for_candidate(candidate=request.user, job=job)
+
         if deleted_count > 0:
             return Response({'detail': 'Job removed from saved.'})
         return Response(
             {'detail': 'Job was not saved.'},
             status=status.HTTP_404_NOT_FOUND
         )
-    
+
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def my_jobs(self, request):
         """Get jobs posted by current employer."""
@@ -153,17 +180,21 @@ class JobViewSet(viewsets.ModelViewSet):
                 {'detail': 'Only employers can view their jobs.'},
                 status=status.HTTP_403_FORBIDDEN
             )
-        
-        queryset = Job.objects.filter(employer=request.user).order_by('-created_at')
+
+        queryset = (
+            Job.objects.filter(employer=request.user)
+            .select_related('employer', 'category')
+            .order_by('-created_at')
+        )
         page = self.paginate_queryset(queryset)
-        
+
         if page is not None:
             serializer = JobDetailSerializer(page, many=True, context={'request': request})
             return self.get_paginated_response(serializer.data)
-        
+
         serializer = JobDetailSerializer(queryset, many=True, context={'request': request})
         return Response(serializer.data)
-    
+
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def saved(self, request):
         """Get saved jobs for candidate."""
@@ -172,13 +203,17 @@ class JobViewSet(viewsets.ModelViewSet):
                 {'detail': 'Only candidates can view saved jobs.'},
                 status=status.HTTP_403_FORBIDDEN
             )
-        
-        saved_jobs = JobSavedByUser.objects.filter(candidate=request.user).order_by('-created_at')
+
+        saved_jobs = (
+            JobSavedByUser.objects.filter(candidate=request.user)
+            .select_related('job', 'job__employer', 'job__category')
+            .order_by('-created_at')
+        )
         page = self.paginate_queryset(saved_jobs)
-        
+
         if page is not None:
             serializer = JobSavedByUserSerializer(page, many=True)
             return self.get_paginated_response(serializer.data)
-        
+
         serializer = JobSavedByUserSerializer(saved_jobs, many=True)
         return Response(serializer.data)

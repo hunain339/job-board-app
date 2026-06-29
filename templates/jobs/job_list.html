@@ -2,141 +2,292 @@
 {% load static %}
 {% load core_tags %}
 
-{% block title %}Browse Jobs | JobBoard{% endblock %}
+{% block title %}Find the Job That Fits Your Life | JoobBoard{% endblock %}
 
 {% block content %}
-<div class="space-y-8">
-    <!-- Hero Section -->
-    <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-12 text-white">
-        <h1 class="text-4xl font-bold mb-4">Find Your Dream Job</h1>
-        <p class="text-lg text-indigo-100">Search thousands of job opportunities from top companies</p>
-        
-        <!-- Search & Filters -->
-        <form method="get" action="{% url 'jobs_views:job_search' %}" class="mt-8 grid grid-cols-1 md:grid-cols-4 gap-4">
-            <input type="text" name="q" placeholder="Job title, skills..." 
-                   class="md:col-span-2 w-full px-4 py-3 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none">
-            <select name="job_type" class="px-4 py-3 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none">
-                <option value="">All Job Types</option>
-                <option value="full_time">Full-time</option>
-                <option value="part_time">Part-time</option>
-                <option value="contract">Contract</option>
-                <option value="freelance">Freelance</option>
-                <option value="internship">Internship</option>
-            </select>
-            <div class="flex items-center gap-4">
-                <label class="flex items-center gap-2 px-4 py-3 bg-white dark:bg-gray-800 rounded-lg cursor-pointer flex-1">
-                    <input type="checkbox" name="is_remote" value="true" class="rounded">
-                    <span class="text-gray-900 dark:text-white text-sm">Remote</span>
-                </label>
-                <button type="submit" class="px-6 py-3 bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 font-semibold rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition">
-                    Search
-                </button>
+<div class="space-y-12">
+    <!-- Hero / Job Seeker Main Section -->
+    <div class="relative bg-white border border-slate-100 rounded-3xl p-8 lg:p-12 overflow-hidden shadow-sm">
+        <!-- Abstract background blobs for premium feel -->
+        <div class="absolute -top-40 -right-40 w-96 h-96 bg-indigo-500/5 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-40 -left-40 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl"></div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
+            <!-- Left: Hero Text & Search Bar -->
+            <div class="lg:col-span-7 space-y-6">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-600">
+                    <span class="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span>
+                    No. 1 Job Board Platform
+                </span>
+                
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 leading-tight">
+                    Find the <span class="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">job</span> <br class="hidden sm:inline">that fits your life
+                </h1>
+                <p class="text-base sm:text-lg text-slate-500 max-w-lg leading-relaxed">
+                    Discover opportunities, grow your skills and build the career you love with frictionless modern applications.
+                </p>
+
+                <!-- Premium Unified Search Console -->
+                <form method="get" action="{% url 'jobs_views:job_list' %}" class="bg-white border border-slate-200/80 rounded-2xl p-2 shadow-xl shadow-slate-100 grid grid-cols-1 sm:grid-cols-12 gap-2 items-center">
+                    <div class="sm:col-span-5 relative">
+                        <span class="absolute inset-y-0 left-3 flex items-center text-slate-400">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <input type="text" name="q" placeholder="Job title or keyword" 
+                               class="w-full pl-9 pr-4 py-3 text-sm text-slate-800 placeholder-slate-400 bg-transparent focus:outline-none" value="{{ request.GET.q|default:'' }}">
+                    </div>
+                    
+                    <div class="sm:col-span-4 relative border-t sm:border-t-0 sm:border-l border-slate-100 pt-2 sm:pt-0">
+                        <span class="absolute inset-y-0 left-3 flex items-center text-slate-400">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </span>
+                        <input type="text" name="location" placeholder="Location" 
+                               class="w-full pl-9 pr-4 py-3 text-sm text-slate-800 placeholder-slate-400 bg-transparent focus:outline-none" value="{{ request.GET.location|default:'' }}">
+                    </div>
+                    
+                    <div class="sm:col-span-3">
+                        <button type="submit" class="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition duration-300 shadow-md shadow-indigo-100 flex items-center justify-center gap-2">
+                            Search Jobs
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Popular Searches -->
+                <div class="flex flex-wrap items-center gap-2.5 text-xs font-semibold text-slate-400">
+                    <span class="text-slate-500">Popular searches:</span>
+                    <a href="?q=UI%2FUX+Designer" class="px-3 py-1.5 rounded-full bg-slate-50 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition border border-slate-100">UI/UX Designer</a>
+                    <a href="?q=React+Developer" class="px-3 py-1.5 rounded-full bg-slate-50 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition border border-slate-100">React Developer</a>
+                    <a href="?q=Product+Manager" class="px-3 py-1.5 rounded-full bg-slate-50 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition border border-slate-100">Product Manager</a>
+                </div>
             </div>
-        </form>
+
+            <!-- Right: Beautiful Floating Metrics Layout -->
+            <div class="lg:col-span-5 relative flex justify-center items-center">
+                <!-- Main graphical centerpiece -->
+                <div class="relative w-80 h-80 sm:w-96 sm:h-96 rounded-3xl bg-gradient-to-br from-indigo-100 to-purple-100 overflow-hidden shadow-inner flex items-center justify-center">
+                    <div class="absolute inset-0 bg-white/20 backdrop-blur-2xl"></div>
+                    <!-- Vector-style developer laptop graphics simulated with CSS -->
+                    <div class="relative z-10 flex flex-col items-center gap-4 text-center p-8">
+                        <div class="w-20 h-20 bg-indigo-600 text-white rounded-2xl flex items-center justify-center text-4xl shadow-lg shadow-indigo-200">
+                            <i class="fas fa-laptop-code"></i>
+                        </div>
+                        <h3 class="text-xl font-extrabold text-indigo-950">Unlock Your Potential</h3>
+                        <p class="text-xs text-indigo-900/60 font-medium max-w-[200px]">Customize your profile, match instantly, apply seamlessly.</p>
+                    </div>
+                </div>
+
+                <!-- 95% Profile Strength Widget -->
+                <div class="absolute -top-6 -left-6 bg-white border border-slate-100 rounded-2xl p-4 shadow-xl flex items-center gap-4 animate-bounce" style="animation-duration: 4s;">
+                    <div class="relative w-12 h-12 flex items-center justify-center">
+                        <svg class="w-full h-full transform -rotate-90">
+                            <circle cx="24" cy="24" r="20" stroke="currentColor" stroke-width="4" class="text-slate-100" fill="transparent"></circle>
+                            <circle cx="24" cy="24" r="20" stroke="currentColor" stroke-width="4" class="text-indigo-600" fill="transparent" stroke-dasharray="125.6" stroke-dashoffset="6.28"></circle>
+                        </svg>
+                        <span class="absolute text-xs font-bold text-slate-800">95%</span>
+                    </div>
+                    <div>
+                        <p class="text-xs font-extrabold text-slate-800">Profile strength</p>
+                        <p class="text-[10px] font-semibold text-slate-400">Excellent progress</p>
+                    </div>
+                </div>
+
+                <!-- Fast Verification Badge -->
+                <div class="absolute -bottom-6 -right-6 bg-white border border-slate-100 rounded-2xl p-4 shadow-xl flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center text-sm">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-extrabold text-slate-800">Verified User</p>
+                        <p class="text-[10px] font-semibold text-slate-400">Match active</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Premium Top Companies Row -->
+        <div class="mt-16 pt-8 border-t border-slate-100">
+            <p class="text-center text-xs font-extrabold text-slate-400 tracking-widest uppercase mb-6">Top Companies Hiring Right Now</p>
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6 items-center justify-center opacity-60 grayscale hover:opacity-100 transition duration-300">
+                <div class="flex items-center justify-center gap-2">
+                    <i class="fab fa-google text-slate-800 text-lg"></i> <span class="font-bold text-slate-800">Google</span>
+                </div>
+                <div class="flex items-center justify-center gap-2">
+                    <i class="fab fa-microsoft text-slate-800 text-lg"></i> <span class="font-bold text-slate-800">Microsoft</span>
+                </div>
+                <div class="flex items-center justify-center gap-2">
+                    <i class="fab fa-airbnb text-slate-800 text-lg"></i> <span class="font-bold text-slate-800">Airbnb</span>
+                </div>
+                <div class="flex items-center justify-center gap-2">
+                    <i class="fab fa-amazon text-slate-800 text-lg"></i> <span class="font-bold text-slate-800">Amazon</span>
+                </div>
+                <div class="flex items-center justify-center gap-2">
+                    <i class="fab fa-spotify text-slate-800 text-lg"></i> <span class="font-bold text-slate-800">Spotify</span>
+                </div>
+                <div class="flex items-center justify-center gap-2">
+                    <i class="fab fa-slack text-slate-800 text-lg"></i> <span class="font-bold text-slate-800">Slack</span>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Job Listings -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <!-- Main Content -->
-        <div class="lg:col-span-2 space-y-4">
-            {% if jobs %}
-                {% for job in jobs %}
-                    <div class="group bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="flex-1">
-                                <a href="{% url 'jobs_views:job_detail' job.slug %}" class="text-xl font-bold text-gray-900 dark:text-white hover:text-indigo-600 transition">
-                                    {{ job.title }}
-                                </a>
-                                <p class="text-sm text-indigo-600 font-medium">{{ job.employer.company_name|default:job.employer.email }}</p>
+    <!-- Job Listings, Filters & Categories Column Layout -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <!-- Left 8 Columns: Job Postings -->
+        <div class="lg:col-span-8 space-y-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-extrabold text-slate-900">Featured Jobs</h2>
+                    <p class="text-xs font-semibold text-slate-400 mt-1">Explore top roles handpicked for your profile</p>
+                </div>
+                <span class="text-xs font-bold text-indigo-600 bg-indigo-50/50 border border-indigo-100 rounded-full px-3 py-1.5 hover:bg-indigo-50 transition cursor-pointer">
+                    See all
+                </span>
+            </div>
+
+            <div class="space-y-4">
+                {% if jobs %}
+                    {% for job in jobs %}
+                        <div class="group relative bg-white border border-slate-100 rounded-3xl p-6 lg:p-8 hover:shadow-xl hover:shadow-slate-100 hover:-translate-y-1 transition-all duration-300">
+                            <!-- Inner decorative border gradient on hover -->
+                            <div class="absolute inset-y-0 left-0 w-1.5 rounded-l-3xl bg-transparent group-hover:bg-gradient-to-b group-hover:from-indigo-600 group-hover:to-purple-600 transition-all duration-300"></div>
+
+                            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+                                <div class="flex items-center gap-4">
+                                    <!-- Dynamic simulated branding avatar -->
+                                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-slate-100 to-indigo-50/20 border border-slate-100 flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform">
+                                        {% if job.employer.company_logo %}
+                                            <img src="{{ job.employer.company_logo.url }}" alt="{{ job.employer.company_name }}" class="w-10 h-10 object-cover rounded-xl">
+                                        {% else %}
+                                            <!-- Fallback beautifully styled letters/icons -->
+                                            {% if 'google' in job.employer.company_name|default:''|lower %}
+                                                <i class="fab fa-google text-slate-700 text-2xl"></i>
+                                            {% elif 'microsoft' in job.employer.company_name|default:''|lower %}
+                                                <i class="fab fa-microsoft text-slate-700 text-2xl"></i>
+                                            {% elif 'spotify' in job.employer.company_name|default:''|lower %}
+                                                <i class="fab fa-spotify text-slate-700 text-2xl"></i>
+                                            {% elif 'airbnb' in job.employer.company_name|default:''|lower %}
+                                                <i class="fab fa-airbnb text-slate-700 text-2xl"></i>
+                                            {% else %}
+                                                <span class="font-extrabold text-indigo-600 text-lg">{{ job.employer.company_name|default:'JB'|slice:":2"|upper }}</span>
+                                            {% endif %}
+                                        {% endif %}
+                                    </div>
+
+                                    <div>
+                                        <div class="flex items-center gap-2 flex-wrap">
+                                            <span class="text-xs font-bold text-slate-400 capitalize">{{ job.employer.company_name|default:job.employer.email }}</span>
+                                            <span class="w-1 h-1 rounded-full bg-slate-300"></span>
+                                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-600 border border-indigo-100/50">New</span>
+                                        </div>
+                                        <a href="{% url 'jobs_views:job_detail' job.slug %}" class="text-lg font-extrabold text-slate-900 hover:text-indigo-600 leading-snug transition block mt-0.5">
+                                            {{ job.title }}
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <div class="flex flex-col items-end gap-2 text-right">
+                                    <span class="px-3 py-1.5 text-xs font-extrabold rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100/30">
+                                        {{ job.get_job_type_display }}
+                                    </span>
+                                    {% if job.salary_min %}
+                                        <span class="text-sm font-extrabold text-emerald-600 flex items-center gap-1.5 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100">
+                                            {{ job.salary_range }}
+                                        </span>
+                                    {% endif %}
+                                </div>
                             </div>
-                            <span class="px-4 py-2 text-xs font-bold bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 rounded-full">
-                                {{ job.get_job_type_display }}
-                            </span>
-                        </div>
-                        
-                        <p class="text-gray-600 dark:text-gray-400 text-sm line-clamp-2 mb-4">{{ job.description|truncatewords:30 }}</p>
-                        
-                        <!-- Meta Info -->
-                        <div class="flex flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-400 mb-4">
-                            {% if job.location %}
-                                <span class="flex items-center gap-2">
-                                    <i class="fas fa-map-pin text-gray-400"></i> {{ job.location }}
-                                </span>
-                            {% endif %}
-                            {% if job.is_remote %}
-                                <span class="flex items-center gap-2">
-                                    <i class="fas fa-laptop text-gray-400"></i> Remote
-                                </span>
-                            {% endif %}
-                            {% if job.salary_min %}
-                                <span class="flex items-center gap-2 font-semibold text-emerald-600 dark:text-emerald-400">
-                                    <i class="fas fa-money-bill text-gray-400"></i> {{ job.salary_range }}
-                                </span>
-                            {% endif %}
-                            <span class="flex items-center gap-2">
-                                <i class="fas fa-user-graduate text-gray-400"></i> {{ job.get_experience_level_display }}
-                            </span>
-                        </div>
-                        
-                        <!-- Tags -->
-                        {% if job.required_skills %}
-                            <div class="flex flex-wrap gap-2 mb-4">
-                                {% for skill in job.required_skills|split:"," %}
-                                    <span class="px-3 py-1 text-xs bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full">{{ skill|trim }}</span>
-                                {% endfor %}
+
+                            <p class="text-slate-500 text-sm leading-relaxed mb-6 font-medium line-clamp-2">{{ job.description|truncatewords:25 }}</p>
+
+                            <!-- Meta Info Bar & Actions -->
+                            <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-4 border-t border-slate-50">
+                                <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-semibold text-slate-400">
+                                    <span class="flex items-center gap-1.5 text-slate-500">
+                                        <i class="fas fa-map-marker-alt text-slate-400"></i> {{ job.location }}
+                                    </span>
+                                    <span class="flex items-center gap-1.5 text-slate-500">
+                                        <i class="fas fa-user-graduate text-slate-400"></i> {{ job.get_experience_level_display }}
+                                    </span>
+                                    {% if job.is_remote %}
+                                        <span class="flex items-center gap-1.5 text-slate-500">
+                                            <i class="fas fa-laptop text-slate-400"></i> Remote
+                                        </span>
+                                    {% endif %}
+                                </div>
+
+                                <div class="flex gap-2 items-center">
+                                    <a href="{% url 'jobs_views:job_detail' job.slug %}" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition font-extrabold text-xs shadow-lg shadow-indigo-100 text-center">
+                                        View Details
+                                    </a>
+                                    {% if user.is_authenticated and user.role == 'candidate' %}
+                                        <!-- Save job AJAX/button triggers -->
+                                        <button class="w-10 h-10 rounded-xl border border-slate-200 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 hover:border-indigo-100 transition flex items-center justify-center">
+                                            <i class="far fa-bookmark text-sm"></i>
+                                        </button>
+                                    {% endif %}
+                                </div>
                             </div>
-                        {% endif %}
-                        
-                        <!-- Actions -->
-                        <div class="flex gap-2">
-                            <a href="{% url 'jobs_views:job_detail' job.slug %}" class="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-center text-sm font-medium">
-                                View Details
-                            </a>
-                            {% if user.is_authenticated and user_is_candidate %}
-                                <button class="px-4 py-2 border border-indigo-600 text-indigo-600 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition text-sm font-medium">
-                                    <i class="fas fa-bookmark"></i>
-                                </button>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-16 bg-white border border-slate-100 rounded-3xl p-8">
+                        <div class="w-16 h-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-3xl mx-auto mb-4 shadow-inner">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-800">No jobs found</h3>
+                        <p class="text-sm text-slate-400 mt-1 max-w-sm mx-auto">Try adjusting your filters or search keywords to explore alternative roles.</p>
+                    </div>
+                {% endif %}
+
+                <!-- Refined Pagination Bar -->
+                {% if page_obj.has_other_pages %}
+                    <div class="flex items-center justify-between pt-6">
+                        <p class="text-xs font-semibold text-slate-400">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</p>
+                        <div class="flex items-center gap-2">
+                            {% if page_obj.has_previous %}
+                                <a href="?{% url_replace page=page_obj.previous_page_number %}" class="px-4 py-2 text-xs font-bold text-slate-600 hover:text-indigo-600 bg-white border border-slate-150 rounded-xl transition">Previous</a>
+                            {% endif %}
+                            {% if page_obj.has_next %}
+                                <a href="?{% url_replace page=page_obj.next_page_number %}" class="px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition shadow-lg shadow-indigo-100">Next</a>
                             {% endif %}
                         </div>
                     </div>
-                {% endfor %}
-            {% else %}
-                <div class="text-center py-12">
-                    <i class="fas fa-search text-4xl text-gray-300 mb-4"></i>
-                    <p class="text-gray-600 dark:text-gray-400">No jobs found. Try adjusting your filters.</p>
-                </div>
-            {% endif %}
-            
-            <!-- Pagination -->
-            {% if page_obj.has_other_pages %}
-                <div class="flex justify-center gap-2 mt-8">
-                    {% if page_obj.has_previous %}
-                        <a href="?page=1" class="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">First</a>
-                        <a href="?page={{ page_obj.previous_page_number }}" class="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">Previous</a>
-                    {% endif %}
-                    
-                    <span class="px-4 py-2">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-                    
-                    {% if page_obj.has_next %}
-                        <a href="?page={{ page_obj.next_page_number }}" class="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">Next</a>
-                        <a href="?page={{ page_obj.paginator.num_pages }}" class="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">Last</a>
-                    {% endif %}
-                </div>
-            {% endif %}
+                {% endif %}
+            </div>
         </div>
-        
-        <!-- Sidebar -->
-        <div class="lg:col-span-1">
-            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 sticky top-24">
-                <h3 class="font-bold text-lg mb-6">Categories</h3>
-                <div class="space-y-2">
+
+        <!-- Right 4 Columns: Filters / Categories Sticky Bar -->
+        <div class="lg:col-span-4 lg:sticky lg:top-24 space-y-6">
+            <div class="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm">
+                <h3 class="font-extrabold text-slate-900 text-lg mb-4 flex items-center gap-2">
+                    <i class="fas fa-filter text-indigo-500"></i> Categories
+                </h3>
+                <div class="space-y-1">
+                    <a href="?" class="flex items-center justify-between px-3 py-2 rounded-xl text-sm font-semibold hover:bg-indigo-50/50 hover:text-indigo-600 transition {% if not request.GET.category %}bg-indigo-50 text-indigo-600{% else %}text-slate-500{% endif %}">
+                        <span>All Categories</span>
+                        <i class="fas fa-chevron-right text-[10px] opacity-40"></i>
+                    </a>
                     {% for category in categories %}
-                        <a href="?category={{ category.id }}" class="block px-4 py-2 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition text-sm font-medium">
-                            {{ category.name }}
+                        <a href="?category={{ category.id }}" class="flex items-center justify-between px-3 py-2 rounded-xl text-sm font-semibold hover:bg-indigo-50/50 hover:text-indigo-600 transition {% if request.GET.category|add:0 == category.id %}bg-indigo-50 text-indigo-600{% else %}text-slate-500{% endif %}">
+                            <span>{{ category.name }}</span>
+                            <i class="fas fa-chevron-right text-[10px] opacity-40"></i>
                         </a>
                     {% endfor %}
                 </div>
             </div>
+
+            <!-- Profile completion prompt for unauthenticated users -->
+            {% if not user.is_authenticated %}
+                <div class="bg-gradient-to-br from-indigo-900 to-indigo-950 text-white rounded-3xl p-6 shadow-xl relative overflow-hidden">
+                    <div class="absolute -top-10 -right-10 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl"></div>
+                    <h3 class="font-extrabold text-lg leading-snug mb-2">Want to apply to these premium jobs?</h3>
+                    <p class="text-xs text-indigo-200/80 leading-relaxed mb-6">Create your candidate profile, upload your resume, and apply to elite companies in 1-click.</p>
+                    <div class="flex flex-col gap-2">
+                        <a href="{% url 'users_views:login' %}" class="w-full py-2.5 bg-white hover:bg-slate-100 text-indigo-950 text-xs font-bold rounded-xl transition text-center shadow-md">Sign In</a>
+                        <a href="{% url 'users_views:register_candidate' %}" class="w-full py-2.5 bg-white/10 hover:bg-white/15 text-white text-xs font-bold rounded-xl transition text-center border border-white/10">Register Now</a>
+                    </div>
+                </div>
+            {% endif %}
         </div>
     </div>
 </div>

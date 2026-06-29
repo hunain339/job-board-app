@@ -1,0 +1,48 @@
+# Git and version control
+.git
+.gitignore
+.github
+
+# Python environment and cache
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Local database
+*.sqlite3
+db.sqlite3
+
+# Node dependencies and build
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# IDEs and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Docker configuration files
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Environment files
+.env
+.env.prod
+.env.example
+.env.*.local
+
+# Logs and temporary files
+logs/
+*.log
+tmp/
+temp/

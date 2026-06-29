@@ -1,39 +1,52 @@
 """Job models."""
 
-from django.db import models
-from django.contrib.auth import get_user_model
-from django.utils.text import slugify
-from core.models import BaseModel
 import uuid
+
+from django.core.cache import cache
+from django.contrib.auth import get_user_model
+from django.db import models
+from django.utils.text import slugify
+
+from core.models import BaseModel
+
+JOB_CATEGORIES_CACHE_KEY = 'job_categories:all'
+JOB_CATEGORIES_WEB_CACHE_KEY = 'job_categories_all'
 
 User = get_user_model()
 
 
 class JobCategory(models.Model):
     """Job categories."""
-    
+
     name = models.CharField(max_length=100, unique=True)
     slug = models.SlugField(unique=True)
     description = models.TextField(blank=True, null=True)
     icon = models.CharField(max_length=50, blank=True, null=True)
-    
+
     class Meta:
         verbose_name = 'Job Category'
         verbose_name_plural = 'Job Categories'
         ordering = ['name']
-    
+
     def __str__(self):
         return self.name
-    
+
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
+        cache.delete(JOB_CATEGORIES_CACHE_KEY)
+        cache.delete(JOB_CATEGORIES_WEB_CACHE_KEY)
+
+    def delete(self, *args, **kwargs):
+        cache.delete(JOB_CATEGORIES_CACHE_KEY)
+        cache.delete(JOB_CATEGORIES_WEB_CACHE_KEY)
+        return super().delete(*args, **kwargs)
 
 
 class Job(BaseModel):
     """Job posting model."""
-    
+
     JOB_TYPE_CHOICES = (
         ('full_time', 'Full-time'),
         ('part_time', 'Part-time'),
@@ -41,14 +54,14 @@ class Job(BaseModel):
         ('freelance', 'Freelance'),
         ('internship', 'Internship'),
     )
-    
+
     EXPERIENCE_LEVEL_CHOICES = (
         ('entry', 'Entry Level'),
         ('mid', 'Mid Level'),
         ('senior', 'Senior'),
         ('lead', 'Lead'),
     )
-    
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=255)
     slug = models.SlugField(unique=True)
@@ -65,9 +78,9 @@ class Job(BaseModel):
     employer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posted_jobs')
     is_active = models.BooleanField(default=True)
     is_featured = models.BooleanField(default=False)
-    views_count = models.PositiveIntegerField(default=0)
-    applications_count = models.PositiveIntegerField(default=0)
-    
+    views_count = models.PositiveIntegerField(default=0, db_index=True)
+    applications_count = models.PositiveIntegerField(default=0, db_index=True)
+
     class Meta:
         ordering = ['-created_at']
         verbose_name = 'Job'
@@ -78,11 +91,14 @@ class Job(BaseModel):
             models.Index(fields=['is_active']),
             models.Index(fields=['created_at']),
             models.Index(fields=['job_type']),
+            models.Index(fields=['is_featured']),
+            models.Index(fields=['-views_count']),
+            models.Index(fields=['-created_at', 'is_active']),
         ]
-    
+
     def __str__(self):
         return self.title
-    
+
     def save(self, *args, **kwargs):
         if not self.slug:
             base_slug = slugify(self.title)
@@ -94,7 +110,9 @@ class Job(BaseModel):
                 counter += 1
             self.slug = slug
         super().save(*args, **kwargs)
-    
+
+
+
     @property
     def salary_range(self):
         """Get formatted salary range."""
@@ -105,7 +123,7 @@ class Job(BaseModel):
         elif self.salary_max:
             return f"Up to {self.currency} {self.salary_max:,.0f}"
         return "Not specified"
-    
+
     @property
     def is_urgent(self):
         """Check if job is recently posted."""
@@ -116,14 +134,14 @@ class Job(BaseModel):
 
 class JobSavedByUser(models.Model):
     """Track saved jobs by candidates."""
-    
+
     candidate = models.ForeignKey(User, on_delete=models.CASCADE, related_name='saved_jobs')
     job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name='saved_by')
     created_at = models.DateTimeField(auto_now_add=True)
-    
+
     class Meta:
         unique_together = ('candidate', 'job')
         ordering = ['-created_at']
-    
+
     def __str__(self):
         return f"{self.candidate.email} saved {self.job.title}"

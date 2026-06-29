@@ -1,84 +1,317 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Employer Dashboard | JobBoard{% endblock %}
+{% block title %}Employer Dashboard | JoobBoard{% endblock %}
 
 {% block content %}
 <div class="space-y-8">
-    <div class="flex justify-between items-center">
+    <!-- Employer Header -->
+    <div
+        class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white border border-slate-100 p-6 rounded-3xl shadow-sm"
+    >
         <div>
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Employer Dashboard</h1>
-            <p class="text-gray-600 dark:text-gray-400 mt-1">{{ user.company_name }}</p>
+            <span
+                class="text-xs font-bold text-purple-600 bg-purple-50 px-2.5 py-1 rounded-full border border-purple-100/50 uppercase tracking-wider"
+                >Employer Hub</span
+            >
+            <h1
+                class="text-3xl font-extrabold text-slate-900 tracking-tight mt-1"
+            >
+                Employer Dashboard
+            </h1>
+            <p class="text-xs font-semibold text-slate-400 mt-1">
+                Managing talent for
+                <span class="text-slate-800 font-bold"
+                    >{{ user.company_name }}</span
+                >
+            </p>
         </div>
-        <a href="{% url 'jobs_views:post_job' %}" class="px-6 py-3 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition shadow-sm">
-            Post a New Job
+        <a
+            href="{% url 'jobs_views:post_job' %}"
+            class="px-5 py-3 bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold rounded-xl transition duration-300 shadow-md shadow-purple-100 flex items-center gap-2"
+        >
+            <i class="fas fa-plus"></i> Post a New Job
         </a>
     </div>
 
-    <!-- Stats -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
-            <p class="text-gray-600 dark:text-gray-400 text-sm mb-1">Active Jobs</p>
-            <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ active_jobs_count }}</p>
+    <!-- Analytical Metric Rows -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+        <div
+            class="bg-white border border-slate-100 p-6 rounded-3xl shadow-sm flex items-center gap-4"
+        >
+            <div
+                class="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center text-xl"
+            >
+                <i class="fas fa-briefcase"></i>
+            </div>
+            <div>
+                <p
+                    class="text-[10px] font-extrabold text-slate-400 tracking-wider uppercase"
+                >
+                    Active Jobs
+                </p>
+                <div class="flex items-center gap-2 mt-0.5">
+                    <p class="text-2xl font-extrabold text-slate-900">
+                        {{ active_jobs_count }}
+                    </p>
+                    <span
+                        class="text-[10px] font-bold text-emerald-500 bg-emerald-50 px-1.5 py-0.5 rounded-md flex items-center"
+                        ><i class="fas fa-caret-up mr-0.5"></i> +2 this
+                        week</span
+                    >
+                </div>
+            </div>
         </div>
-        <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
-            <p class="text-gray-600 dark:text-gray-400 text-sm mb-1">Total Applications</p>
-            <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ total_applications_count }}</p>
+
+        <div
+            class="bg-white border border-slate-100 p-6 rounded-3xl shadow-sm flex items-center gap-4"
+        >
+            <div
+                class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl"
+            >
+                <i class="fas fa-file-invoice"></i>
+            </div>
+            <div>
+                <p
+                    class="text-[10px] font-extrabold text-slate-400 tracking-wider uppercase"
+                >
+                    Applications
+                </p>
+                <div class="flex items-center gap-2 mt-0.5">
+                    <p class="text-2xl font-extrabold text-slate-900">
+                        {{ total_applications_count }}
+                    </p>
+                    <span
+                        class="text-[10px] font-bold text-emerald-500 bg-emerald-50 px-1.5 py-0.5 rounded-md flex items-center"
+                        ><i class="fas fa-caret-up mr-0.5"></i> +24%</span
+                    >
+                </div>
+            </div>
+        </div>
+
+        <div
+            class="bg-white border border-slate-100 p-6 rounded-3xl shadow-sm flex items-center gap-4"
+        >
+            <div
+                class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-500 flex items-center justify-center text-xl"
+            >
+                <i class="fas fa-user-check"></i>
+            </div>
+            <div>
+                <p
+                    class="text-[10px] font-extrabold text-slate-400 tracking-wider uppercase"
+                >
+                    Shortlisted
+                </p>
+                <div class="flex items-center gap-2 mt-0.5">
+                    <p class="text-2xl font-extrabold text-slate-900">32</p>
+                    <!-- Mocked to match design -->
+                    <span
+                        class="text-[10px] font-bold text-emerald-500 bg-emerald-50 px-1.5 py-0.5 rounded-md flex items-center"
+                        ><i class="fas fa-caret-up mr-0.5"></i> +12%</span
+                    >
+                </div>
+            </div>
+        </div>
+
+        <div
+            class="bg-white border border-slate-100 p-6 rounded-3xl shadow-sm flex items-center gap-4"
+        >
+            <div
+                class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-500 flex items-center justify-center text-xl"
+            >
+                <i class="fas fa-user-tie"></i>
+            </div>
+            <div>
+                <p
+                    class="text-[10px] font-extrabold text-slate-400 tracking-wider uppercase"
+                >
+                    Hires
+                </p>
+                <div class="flex items-center gap-2 mt-0.5">
+                    <p class="text-2xl font-extrabold text-slate-900">8</p>
+                    <!-- Mocked to match design -->
+                    <span
+                        class="text-[10px] font-bold text-emerald-500 bg-emerald-50 px-1.5 py-0.5 rounded-md flex items-center"
+                        ><i class="fas fa-caret-up mr-0.5"></i> +8%</span
+                    >
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Recent Applications -->
-    <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
-        <div class="p-6 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center">
-            <h2 class="text-xl font-bold">Recent Applications</h2>
-            <a href="#" class="text-indigo-600 hover:text-indigo-700 text-sm font-medium">Manage All</a>
-        </div>
-        <div class="overflow-x-auto">
-            <table class="w-full text-left">
-                <thead>
-                    <tr class="bg-gray-50 dark:bg-gray-800/50 text-gray-600 dark:text-gray-400 text-sm uppercase">
-                        <th class="px-6 py-4 font-semibold">Candidate</th>
-                        <th class="px-6 py-4 font-semibold">Job Title</th>
-                        <th class="px-6 py-4 font-semibold">Date Applied</th>
-                        <th class="px-6 py-4 font-semibold">Status</th>
-                        <th class="px-6 py-4 font-semibold">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200 dark:divide-gray-800">
-                    {% for app in recent_applications %}
-                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
-                            <td class="px-6 py-4">
-                                <div class="font-semibold text-gray-900 dark:text-white">{{ app.candidate.first_name }} {{ app.candidate.last_name }}</div>
-                                <div class="text-xs text-gray-500">{{ app.candidate.email }}</div>
+    <!-- Active Management Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <!-- Left: Incoming Applicants -->
+        <div
+            class="lg:col-span-8 bg-white border border-slate-100 rounded-3xl shadow-sm overflow-hidden"
+        >
+            <div
+                class="p-6 border-b border-slate-100 flex justify-between items-center"
+            >
+                <div>
+                    <h2 class="text-lg font-extrabold text-slate-900">
+                        Incoming Applications
+                    </h2>
+                    <p class="text-xs font-semibold text-slate-400 mt-0.5">
+                        Review, rate, and update status of candidates
+                    </p>
+                </div>
+                <a
+                    href="javascript:alert('This app is for demo purposes only');"
+                    class="text-xs font-bold text-purple-600 bg-purple-50/50 border border-purple-100 rounded-full px-3 py-1.5 hover:bg-purple-50 transition"
+                    >Manage All</a
+                >
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr
+                            class="bg-slate-50/50 border-b border-slate-100 text-slate-400 text-[10px] font-extrabold tracking-widest uppercase"
+                        >
+                            <th class="px-6 py-4">Candidate</th>
+                            <th class="px-6 py-4">Target Role</th>
+                            <th class="px-6 py-4">Date Received</th>
+                            <th class="px-6 py-4">Status</th>
+                            <th class="px-6 py-4 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody
+                        class="divide-y divide-slate-100 text-sm font-semibold"
+                    >
+                        {% for app in recent_applications %}
+                        <tr class="hover:bg-slate-50/50 transition">
+                            <td class="px-6 py-5">
+                                <div class="flex items-center gap-3">
+                                    <div
+                                        class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 font-bold flex items-center justify-center shadow-inner"
+                                    >
+                                        {{ app.candidate.first_name|first|upper
+                                        }}{{ app.candidate.last_name|first|upper
+                                        }}
+                                    </div>
+                                    <div>
+                                        <p
+                                            class="font-extrabold text-slate-900 leading-snug"
+                                        >
+                                            {{ app.candidate.first_name }} {{
+                                            app.candidate.last_name }}
+                                        </p>
+                                        <p
+                                            class="text-xs text-slate-400 leading-normal"
+                                        >
+                                            {{ app.candidate.email }}
+                                        </p>
+                                    </div>
+                                </div>
                             </td>
-                            <td class="px-6 py-4">
-                                <a href="{% url 'jobs_views:job_detail' app.job.slug %}" class="text-gray-700 dark:text-gray-300 hover:text-indigo-600">
+                            <td class="px-6 py-5">
+                                <a
+                                    href="{% url 'jobs_views:job_detail' app.job.slug %}"
+                                    class="text-slate-700 hover:text-purple-600 transition block"
+                                >
                                     {{ app.job.title }}
                                 </a>
                             </td>
-                            <td class="px-6 py-4 text-sm">{{ app.created_at|date:"M d, Y" }}</td>
-                            <td class="px-6 py-4">
-                                <span class="px-3 py-1 text-xs font-bold rounded-full 
-                                    {% if app.status == 'applied' %}bg-blue-100 text-blue-700
-                                    {% elif app.status == 'reviewing' %}bg-yellow-100 text-yellow-700
-                                    {% elif app.status == 'interviewing' %}bg-purple-100 text-purple-700
-                                    {% elif app.status == 'hired' %}bg-green-100 text-green-700
-                                    {% elif app.status == 'rejected' %}bg-red-100 text-red-700
-                                    {% endif %}">
+                            <td class="px-6 py-5 text-slate-500 text-xs">
+                                {{ app.created_at|date:"M d, Y" }}
+                            </td>
+                            <td class="px-6 py-5">
+                                <span
+                                    class="inline-flex px-3 py-1 text-[11px] font-bold rounded-full {% if app.status == 'applied' %}bg-sky-50 text-sky-700 border border-sky-100/50 {% elif app.status == 'reviewing' %}bg-amber-50 text-amber-700 border border-amber-100/50 {% elif app.status == 'interviewing' %}bg-purple-50 text-purple-700 border border-purple-100/50 {% elif app.status == 'hired' %}bg-emerald-50 text-emerald-700 border border-emerald-100/50 {% elif app.status == 'rejected' %}bg-rose-50 text-rose-700 border border-rose-100/50 {% else %}bg-slate-50 text-slate-700 border border-slate-100 {% endif %}"
+                                >
                                     {{ app.get_status_display }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4">
-                                <a href="{% url 'applications_views:application_detail' app.id %}" class="text-indigo-600 hover:text-indigo-700 text-sm font-medium">Review</a>
+                            <td class="px-6 py-5 text-right">
+                                <a
+                                    href="{% url 'applications_views:application_detail' app.id %}"
+                                    class="px-4 py-2 bg-slate-50 hover:bg-purple-50 border border-slate-100 hover:border-purple-200 text-purple-600 text-xs font-bold rounded-xl transition"
+                                >
+                                    Review
+                                </a>
                             </td>
                         </tr>
-                    {% empty %}
+                        {% empty %}
                         <tr>
-                            <td colspan="5" class="px-6 py-8 text-center text-gray-500">No applications received yet.</td>
+                            <td
+                                colspan="5"
+                                class="px-6 py-12 text-center text-slate-400"
+                            >
+                                <div
+                                    class="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-xl mx-auto mb-3"
+                                >
+                                    <i
+                                        class="far fa-folder-open text-slate-300"
+                                    ></i>
+                                </div>
+                                <p class="font-semibold text-sm">
+                                    No applications received yet
+                                </p>
+                                <p class="text-xs text-slate-400 mt-0.5">
+                                    Your active roles will list candidate
+                                    resumes here.
+                                </p>
+                            </td>
                         </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Right: Dashboard Overview Chart & Posting limits -->
+        <div class="lg:col-span-4 space-y-6">
+            <div
+                class="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm space-y-4"
+            >
+                <h3 class="font-extrabold text-slate-900 text-base">
+                    Active Positions
+                </h3>
+                <div class="divide-y divide-slate-100">
+                    <div
+                        class="py-3 flex justify-between items-center text-xs font-bold"
+                    >
+                        <span class="text-slate-500"
+                            >Senior React Developer</span
+                        >
+                        <span
+                            class="text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-md"
+                            >Active</span
+                        >
+                    </div>
+                    <div
+                        class="py-3 flex justify-between items-center text-xs font-bold"
+                    >
+                        <span class="text-slate-500">Product Manager</span>
+                        <span
+                            class="text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-md"
+                            >Active</span
+                        >
+                    </div>
+                </div>
+            </div>
+
+            <div
+                class="bg-gradient-to-br from-purple-900 to-purple-950 text-white rounded-3xl p-6 shadow-xl relative overflow-hidden"
+            >
+                <div
+                    class="absolute -top-10 -right-10 w-32 h-32 bg-purple-500/10 rounded-full blur-2xl"
+                ></div>
+                <h3 class="font-extrabold text-lg leading-snug mb-2">
+                    Need to hire faster?
+                </h3>
+                <p class="text-xs text-purple-250/80 leading-relaxed mb-6">
+                    Promote your active job postings to the featured spotlight
+                    slot for 5x reach and fast candidate matches.
+                </p>
+                <a
+                    href="javascript:alert('This app is for demo purposes only');"
+                    class="block w-full py-2.5 bg-white hover:bg-slate-100 text-purple-950 text-xs font-bold rounded-xl transition text-center shadow-md"
+                    >Feature Active Job</a
+                >
+            </div>
         </div>
     </div>
 </div>

@@ -32,37 +32,37 @@ print_info() {
 case "${1:-help}" in
     setup)
         print_header "Setting up JobBoard Development Environment"
-        
+
         # Create virtual environment
         print_info "Creating virtual environment..."
         python3 -m venv venv
         source venv/bin/activate
         print_success "Virtual environment created"
-        
+
         # Install dependencies
         print_info "Installing dependencies..."
         pip install --upgrade pip setuptools wheel
         pip install -r requirements.txt
         print_success "Dependencies installed"
-        
+
         # Setup environment
         print_info "Setting up environment variables..."
         if [ ! -f .env ]; then
             cp .env.example .env
             print_success "Created .env file"
         fi
-        
+
         # Setup Tailwind
         print_info "Setting up Tailwind CSS..."
         npm install
         npm run build:css
         print_success "Tailwind CSS configured"
-        
+
         # Run migrations
         print_info "Running migrations..."
         python manage.py migrate
         print_success "Database migrations completed"
-        
+
         # Create initial data
         print_info "Creating initial job categories..."
         python manage.py shell << EOF
@@ -80,28 +80,53 @@ print("Categories created successfully!")
 EOF
         print_success "Setup completed!"
         ;;
-    
+
     run)
         print_header "Starting JobBoard Development Server"
-        
+
         # Activate venv
         source venv/bin/activate 2>/dev/null || true
-        
+
         # Start Tailwind watcher
         print_info "Starting Tailwind CSS watcher..."
         npm run watch:css &
         TAILWIND_PID=$!
-        
-        # Start Django server
-        print_info "Starting Django development server..."
-        python manage.py runserver 0.0.0.0:8000
+
+        # Start Django server in background and save PID
+        print_info "Starting Django development server in background..."
+        python manage.py runserver 0.0.0.0:8000 > /dev/null 2>&1 &
+        echo $! > server.pid
+        print_success "Django development server started with PID $(cat server.pid)"
+        print_info "Access application at: http://0.0.0.0:8000/"
         ;;
-    
+
+    stop)
+        print_header "Stopping JobBoard Development Server"
+        if [ -f server.pid ]; then
+            kill -9 $(cat server.pid) 2>/dev/null || true
+            rm server.pid
+            print_success "Django development server stopped."
+        else
+            print_info "No server PID found."
+        fi
+        # Kill Tailwind watcher if it's still running
+        kill -9 $TAILWIND_PID 2>/dev/null || true
+        ;;
+
+    status)
+        print_header "JobBoard Server Status"
+        if [ -f server.pid ] && kill -0 $(cat server.pid) 2>/dev/null; then
+            print_success "Django development server is running with PID $(cat server.pid)."
+        else
+            print_error "Django development server is NOT running."
+        fi
+        ;;
+
     test)
         print_header "Running Tests"
-        
+
         source venv/bin/activate 2>/dev/null || true
-        
+
         if [ -z "$2" ]; then
             pytest --cov=. --cov-report=html
             print_success "All tests passed! Coverage report: htmlcov/index.html"
@@ -109,12 +134,12 @@ EOF
             pytest "$2" -v
         fi
         ;;
-    
+
     migrate)
         print_header "Database Migration"
-        
+
         source venv/bin/activate 2>/dev/null || true
-        
+
         if [ -z "$2" ]; then
             python manage.py migrate
         else
@@ -122,85 +147,85 @@ EOF
         fi
         print_success "Migration completed"
         ;;
-    
+
     makemigrations)
         print_header "Create Migrations"
-        
+
         source venv/bin/activate 2>/dev/null || true
         python manage.py makemigrations
         print_success "Migrations created"
         ;;
-    
+
     shell)
         print_header "Django Shell"
-        
+
         source venv/bin/activate 2>/dev/null || true
         python manage.py shell
         ;;
-    
+
     admin)
         print_header "Create Superuser"
-        
+
         source venv/bin/activate 2>/dev/null || true
         python manage.py createsuperuser
         print_success "Superuser created"
         ;;
-    
+
     static)
         print_header "Collecting Static Files"
-        
+
         source venv/bin/activate 2>/dev/null || true
         python manage.py collectstatic --noinput
         print_success "Static files collected"
         ;;
-    
+
     clean)
         print_header "Cleaning Up"
-        
+
         print_info "Removing cache files..."
         find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
         find . -type f -name '*.pyc' -delete
         find . -type d -name '.pytest_cache' -exec rm -rf {} + 2>/dev/null || true
-        
+
         print_info "Removing build artifacts..."
         rm -rf build/ dist/ *.egg-info/
-        
+
         print_success "Cleanup completed"
         ;;
-    
+
     docker-build)
         print_header "Building Docker Image"
-        
+
         docker build -t jobboard:latest .
         print_success "Docker image built"
         ;;
-    
+
     docker-up)
         print_header "Starting Docker Compose"
-        
+
         docker-compose up -d
         print_success "Services started"
         print_info "Access application at: http://localhost"
         ;;
-    
+
     docker-down)
         print_header "Stopping Docker Compose"
-        
+
         docker-compose down
         print_success "Services stopped"
         ;;
-    
+
     docker-logs)
         print_header "Docker Logs"
-        
+
         docker-compose logs -f "${2:-web}"
         ;;
-    
+
     lint)
         print_header "Linting Code"
-        
+
         source venv/bin/activate 2>/dev/null || true
-        
+
         # If flake8 is not installed, try to run with available tools
         if command -v flake8 &> /dev/null; then
             flake8 . --max-line-length=120 --exclude=venv,migrations
@@ -208,12 +233,12 @@ EOF
             print_info "flake8 not installed. Install with: pip install flake8"
         fi
         ;;
-    
+
     format)
         print_header "Formatting Code"
-        
+
         source venv/bin/activate 2>/dev/null || true
-        
+
         # If black is installed, use it
         if command -v black &> /dev/null; then
             black . --exclude=venv
@@ -222,7 +247,7 @@ EOF
             print_info "black not installed. Install with: pip install black"
         fi
         ;;
-    
+
     help|*)
         cat << EOF
 ${BLUE}JobBoard Development Helper${NC}
@@ -239,13 +264,13 @@ ${YELLOW}Development Commands:${NC}
   admin              Create superuser
   static             Collect static files
   clean              Clean cache and build artifacts
-  
+
 ${YELLOW}Docker Commands:${NC}
   docker-build       Build Docker image
   docker-up          Start all services with Docker Compose
   docker-down        Stop all services
   docker-logs [service]  View service logs
-  
+
 ${YELLOW}Code Quality:${NC}
   lint               Run linting checks
   format             Format code with black
@@ -256,7 +281,7 @@ ${YELLOW}Examples:${NC}
   ./dev.sh test            # Run all tests
   ./dev.sh test tests/test_users.py  # Run specific tests
   ./dev.sh docker-up       # Start Docker stack
-  
+
 ${YELLOW}Common Workflows:${NC}
   1. First time:    ./dev.sh setup
   2. Then:          ./dev.sh run

@@ -1,109 +1,200 @@
 """Web views for applications app."""
 
-from django.shortcuts import render, get_object_or_404
-from django.views.generic import TemplateView, ListView
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.paginator import Paginator
-from .models import Application
+from django.core.cache import cache
+from django.shortcuts import get_object_or_404, redirect
+from django.views import View
+from django.views.generic import DetailView, ListView
+
+from django.db.models import Q
 from jobs.models import Job
 
+from django.http import HttpResponse, Http404
+from .models import Application
+from .services import update_application_status
 
-from django.views import View
-from django.shortcuts import redirect
-from django.contrib import messages
 
-
-class MyApplicationsView(LoginRequiredMixin, TemplateView):
+class MyApplicationsView(LoginRequiredMixin, ListView):
     """View candidate's applications."""
+
+    login_url = '/users/login/'
     template_name = 'applications/my_applications.html'
-    
+    context_object_name = 'applications'
+    paginate_by = 10
+
+    def get_queryset(self):
+        if self.request.user.role != 'candidate':
+            return Application.objects.none()
+
+        return (
+            Application.objects.filter(candidate=self.request.user)
+            .select_related('job', 'job__employer', 'job__category')
+            .order_by('-created_at')
+        )
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        
         if self.request.user.role != 'candidate':
             context['error'] = 'Only candidates can view applications.'
-            return context
-        
-        applications = Application.objects.filter(
-            candidate=self.request.user
-        ).select_related('job', 'job__employer')
-        
-        # Pagination
-        paginator = Paginator(applications, 10)
-        page_number = self.request.GET.get('page', 1)
-        page_obj = paginator.get_page(page_number)
-        
-        context['page_obj'] = page_obj
-        context['applications'] = page_obj.object_list
         return context
 
 
-class JobApplicationsView(LoginRequiredMixin, TemplateView):
+class JobApplicationsView(LoginRequiredMixin, ListView):
     """View applications for a job (employer only)."""
+
+    login_url = '/users/login/'
     template_name = 'applications/job_applications.html'
-    
+    context_object_name = 'applications'
+    paginate_by = 10
+
+    def dispatch(self, request, *args, **kwargs):
+        self.job = get_object_or_404(
+            Job.objects.select_related('employer', 'category'),
+            id=kwargs.get('job_id'),
+        )
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_queryset(self):
+        if self.request.user.role != 'employer':
+            return Application.objects.none()
+        if self.job.employer != self.request.user:
+            return Application.objects.none()
+
+        queryset = (
+            Application.objects.filter(job=self.job)
+            .select_related('candidate', 'job', 'job__employer', 'job__category')
+            .order_by('-created_at')
+        )
+
+        status_filter = self.request.GET.get('status', '')
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
+
+        return queryset.prefetch_related('employer_notes__employer', 'status_history__changed_by')
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        
+        context['job'] = self.job
         if self.request.user.role != 'employer':
             context['error'] = 'Only employers can view applications.'
             return context
-        
-        job = get_object_or_404(Job, id=kwargs.get('job_id'))
-        
-        if job.employer != self.request.user:
+        if self.job.employer != self.request.user:
             context['error'] = 'You do not have permission to view these applications.'
             return context
-        
-        applications = Application.objects.filter(job=job).select_related('candidate')
-        
-        # Filter by status
-        status_filter = self.request.GET.get('status', '')
-        if status_filter:
-            applications = applications.filter(status=status_filter)
-        
-        # Pagination
-        paginator = Paginator(applications, 10)
-        page_number = self.request.GET.get('page', 1)
-        page_obj = paginator.get_page(page_number)
-        
-        context['page_obj'] = page_obj
-        context['applications'] = page_obj.object_list
-        context['job'] = job
+
+        counts_cache_key = f'job_application_counts_{self.job.id}'
+        counts = cache.get_or_set(
+            counts_cache_key,
+            lambda: {
+                'total_applications': Application.objects.filter(job=self.job).count(),
+                'applied_count': Application.objects.filter(job=self.job, status='applied').count(),
+                'reviewing_count': Application.objects.filter(job=self.job, status='reviewing').count(),
+                'interview_count': Application.objects.filter(job=self.job, status='interview').count(),
+                'hired_count': Application.objects.filter(job=self.job, status='hired').count(),
+            },
+            300,
+        )
+        context.update(counts)
         context['status_choices'] = Application.STATUS_CHOICES
         return context
 
 
-class ApplicationDetailView(LoginRequiredMixin, TemplateView):
+class ApplicationDetailView(LoginRequiredMixin, DetailView):
     """View application detail."""
+
+    login_url = '/users/login/'
     template_name = 'applications/application_detail.html'
-    
+    context_object_name = 'application'
+    pk_url_kwarg = 'application_id'
+
+    def get_queryset(self):
+        user = self.request.user
+        qs = (
+            Application.objects.select_related('candidate', 'job', 'job__employer', 'job__category')
+            .prefetch_related('employer_notes__employer', 'status_history__changed_by')
+        )
+        if user.role == 'admin':
+            return qs
+        return qs.filter(Q(candidate=user) | Q(job__employer=user))
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        application = get_object_or_404(Application, id=kwargs.get('application_id'))
-        
-        # Check permissions
-        is_owner = self.request.user == application.candidate
-        is_employer = self.request.user == application.job.employer
-        
-        if not (is_owner or is_employer):
-            context['error'] = 'You do not have permission to view this application.'
-            return context
-        
-        context['application'] = application
-        context['is_owner'] = is_owner
-        context['is_employer'] = is_employer
+        application = self.object
+
+        context['is_owner'] = self.request.user == application.candidate
+        context['is_employer'] = self.request.user == application.job.employer
         return context
 
 
 class WithdrawApplicationView(LoginRequiredMixin, View):
     """Withdraw application."""
-    
+
+    login_url = '/users/login/'
+
     def post(self, request, application_id):
-        application = get_object_or_404(Application, id=application_id, candidate=request.user)
-        if application.status == 'applied':
-            application.delete()
-            messages.success(request, 'Application withdrawn successfully.')
-        else:
-            messages.error(request, 'Cannot withdraw application that is already being reviewed.')
+        try:
+            application = Application.objects.get(id=application_id, candidate=request.user)
+            if application.status == 'applied':
+                application.delete()
+                messages.success(request, 'Application withdrawn successfully.')
+            else:
+                messages.error(request, 'Cannot withdraw application that is already being reviewed.')
+        except Application.DoesNotExist:
+            pass  # Already withdrawn or does not exist
         return redirect('applications_views:my_applications')
+
+class UpdateApplicationStatusView(LoginRequiredMixin, View):
+    """Update application status (employer only)."""
+
+    login_url = '/users/login/'
+
+    def post(self, request, application_id):
+        application = get_object_or_404(Application, id=application_id, job__employer=request.user)
+        new_status = request.POST.get('status')
+        if new_status in dict(Application.STATUS_CHOICES):
+            update_application_status(
+                application=application,
+                changed_by=request.user,
+                status=new_status
+            )
+            messages.success(request, f'Application status updated to {new_status}.')
+        return redirect('applications_views:job_applications', job_id=application.job.id)
+
+
+class UpdateApplicationRatingView(LoginRequiredMixin, View):
+    """Update application rating (employer only)."""
+
+    login_url = '/users/login/'
+
+    def post(self, request, application_id):
+        application = get_object_or_404(Application, id=application_id, job__employer=request.user)
+        try:
+            rating = int(request.POST.get('rating', 0))
+            if 0 <= rating <= 5:
+                application.rating = rating
+                application.save(update_fields=['rating'])
+                messages.success(request, 'Rating updated.')
+        except ValueError:
+            pass
+        return redirect('applications_views:job_applications', job_id=application.job.id)
+
+
+class ViewResumeView(LoginRequiredMixin, View):
+    """View application resume."""
+
+    login_url = '/users/login/'
+
+    def get(self, request, application_id):
+        user = request.user
+        qs = Application.objects.all()
+        if user.role != 'admin':
+            qs = qs.filter(Q(candidate=user) | Q(job__employer=user))
+        
+        application = get_object_or_404(qs, id=application_id)
+        if not application.resume:
+            raise Http404("Resume not found")
+            
+        response = HttpResponse(application.resume.read(), content_type='application/pdf')
+        response['Content-Disposition'] = f'inline; filename="{application.resume.name.split("/")[-1]}"'
+        return response

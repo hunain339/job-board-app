@@ -1,75 +1,423 @@
 {% extends "base.html" %}
 {% load static %}
+{% load core_tags %}
 
-{% block title %}Candidate Dashboard | JobBoard{% endblock %}
+{% block title %}Job Seeker Dashboard | JoobBoard{% endblock %}
 
 {% block content %}
 <div class="space-y-8">
-    <div class="flex justify-between items-center">
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Welcome, {{ user.first_name|default:user.email }}</h1>
-        <a href="{% url 'jobs_views:job_list' %}" class="px-6 py-3 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition shadow-sm">
-            Find New Jobs
-        </a>
+    <!-- Header with Welcoming Callout -->
+    <div
+        class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white border border-slate-100 p-6 rounded-3xl shadow-sm"
+    >
+        <div>
+            <span
+                class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-100/50 uppercase tracking-wider"
+                >Candidate Hub</span
+            >
+            <h1
+                class="text-3xl font-extrabold text-slate-900 tracking-tight mt-1"
+            >
+                Welcome, {{ user.first_name|default:user.email }}
+            </h1>
+            <p class="text-xs font-semibold text-slate-400 mt-1">
+                Here is the latest activity on your job search
+            </p>
+        </div>
+        <div class="flex items-center gap-3">
+            <a
+                href="{% url 'jobs_views:job_list' %}"
+                class="px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition duration-300 shadow-md shadow-indigo-100 flex items-center gap-2"
+            >
+                <i class="fas fa-search"></i> Find New Jobs
+            </a>
+        </div>
     </div>
 
-    <!-- Stats -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
-            <p class="text-gray-600 dark:text-gray-400 text-sm mb-1">Applications</p>
-            <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ applications_count }}</p>
+    <!-- Overview Stats matching profile layout -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+        <div
+            class="bg-white border border-slate-100 p-6 rounded-3xl shadow-sm flex items-center gap-4"
+        >
+            <div
+                class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl"
+            >
+                <i class="fas fa-file-signature"></i>
+            </div>
+            <div>
+                <p
+                    class="text-[10px] font-extrabold text-slate-400 tracking-wider uppercase"
+                >
+                    Applications
+                </p>
+                <p class="text-2xl font-extrabold text-slate-900 mt-0.5">
+                    {{ applications_count }}
+                </p>
+            </div>
         </div>
-        <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
-            <p class="text-gray-600 dark:text-gray-400 text-sm mb-1">Saved Jobs</p>
-            <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ saved_jobs_count }}</p>
+
+        <div
+            class="bg-white border border-slate-100 p-6 rounded-3xl shadow-sm flex items-center gap-4"
+        >
+            <div
+                class="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center text-xl"
+            >
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <div>
+                <p
+                    class="text-[10px] font-extrabold text-slate-400 tracking-wider uppercase"
+                >
+                    Interviews
+                </p>
+                <p class="text-2xl font-extrabold text-slate-900 mt-0.5">8</p>
+                <!-- Mocked to match design -->
+            </div>
         </div>
-        <!-- Add more stats if needed -->
+
+        <div
+            class="bg-white border border-slate-100 p-6 rounded-3xl shadow-sm flex items-center gap-4"
+        >
+            <div
+                class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-500 flex items-center justify-center text-xl"
+            >
+                <i class="fas fa-award"></i>
+            </div>
+            <div>
+                <p
+                    class="text-[10px] font-extrabold text-slate-400 tracking-wider uppercase"
+                >
+                    Offers
+                </p>
+                <p class="text-2xl font-extrabold text-slate-900 mt-0.5">2</p>
+                <!-- Mocked to match design -->
+            </div>
+        </div>
+
+        <div
+            class="bg-white border border-slate-100 p-6 rounded-3xl shadow-sm flex items-center gap-4"
+        >
+            <div
+                class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-500 flex items-center justify-center text-xl"
+            >
+                <i class="fas fa-bookmark"></i>
+            </div>
+            <div>
+                <p
+                    class="text-[10px] font-extrabold text-slate-400 tracking-wider uppercase"
+                >
+                    Saved Jobs
+                </p>
+                <p class="text-2xl font-extrabold text-slate-900 mt-0.5">
+                    {{ saved_jobs_count }}
+                </p>
+            </div>
+        </div>
     </div>
 
-    <!-- Recent Applications -->
-    <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
-        <div class="p-6 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center">
-            <h2 class="text-xl font-bold">Recent Applications</h2>
-            <a href="{% url 'applications_views:my_applications' %}" class="text-indigo-600 hover:text-indigo-700 text-sm font-medium">View All</a>
+    <!-- Main Dashboard Section Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <!-- Left: Candidate Profile Card, About Me, Skills -->
+        <div class="lg:col-span-5 space-y-6">
+            <!-- Candidate Profile card -->
+            <div
+                class="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm space-y-6"
+            >
+                <div class="flex flex-col items-center text-center space-y-3">
+                    <div class="relative">
+                        {% if user.avatar %}
+                        <img
+                            src="{{ user.avatar.url }}"
+                            alt="{{ user.email }}"
+                            class="w-24 h-24 rounded-2xl object-cover ring-4 ring-indigo-50 shadow-inner"
+                        />
+                        {% else %}
+                        <div
+                            class="w-24 h-24 rounded-2xl bg-gradient-to-tr from-indigo-100 to-purple-100 text-indigo-600 text-3xl font-extrabold flex items-center justify-center shadow-inner"
+                        >
+                            {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                        </div>
+                        {% endif %}
+                        <span
+                            class="absolute -bottom-1 -right-1 w-6 h-6 bg-indigo-600 text-white rounded-full flex items-center justify-center text-[10px] ring-4 ring-white"
+                            title="Verified Professional"
+                        >
+                            <i class="fas fa-check"></i>
+                        </span>
+                    </div>
+
+                    <div>
+                        <h2 class="text-xl font-extrabold text-slate-900">
+                            {{ user.first_name }} {{ user.last_name }}
+                        </h2>
+                        <p
+                            class="text-xs font-semibold text-slate-400 capitalize mt-0.5"
+                        >
+                            {{ user.profile.headline|default:"UI/UX Designer" }}
+                        </p>
+                    </div>
+
+                    <p
+                        class="text-xs font-bold text-slate-500 flex items-center gap-1.5 justify-center"
+                    >
+                        <i class="fas fa-map-marker-alt text-slate-400"></i> {{ user.location|default:"New York, USA" }}
+                    </p>
+                </div>
+
+                <!-- Profile Strength Progress bar -->
+                <div class="pt-4 border-t border-slate-50 space-y-2">
+                    <div
+                        class="flex justify-between items-center text-xs font-bold"
+                    >
+                        <span class="text-slate-500">Profile Strength</span>
+                        <span class="text-indigo-600">95%</span>
+                    </div>
+                    <div
+                        class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden"
+                    >
+                        <div
+                            class="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full"
+                            style="width: 95%"
+                        ></div>
+                    </div>
+                </div>
+
+                <!-- Contact & Bio block -->
+                <div
+                    class="space-y-3 pt-4 border-t border-slate-50 text-xs font-semibold text-slate-500"
+                >
+                    <div class="flex items-center gap-2.5">
+                        <i class="far fa-envelope text-slate-400 text-sm"></i>
+                        <span class="text-slate-800">{{ user.email }}</span>
+                    </div>
+                    {% if user.phone_number %}
+                    <div class="flex items-center gap-2.5">
+                        <i class="fas fa-phone text-slate-400 text-sm"></i>
+                        <span class="text-slate-800"
+                            >{{ user.phone_number }}</span
+                        >
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- About Me Card -->
+            <div
+                class="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm space-y-4"
+            >
+                <h3 class="font-extrabold text-slate-900 text-base">
+                    About Me
+                </h3>
+                <p class="text-slate-500 text-sm leading-relaxed font-medium">
+                    {{ user.bio|default:"Passionate UX/UI Designer with 4+ years of experience creating intuitive and engaging digital experiences for modern brands." }}
+                </p>
+            </div>
+
+            <!-- Skills Tag Card -->
+            <div
+                class="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm space-y-4"
+            >
+                <h3 class="font-extrabold text-slate-900 text-base">Skills</h3>
+                <div class="flex flex-wrap gap-2">
+                    {% if user.profile.skills %}
+                        {% for skill in user.profile.skills|split:"," %}
+                            <span class="px-3 py-1.5 text-xs font-bold bg-slate-50 text-slate-600 rounded-xl border border-slate-100 hover:border-indigo-100 hover:text-indigo-600 transition cursor-default">
+                                {{ skill|trim }}
+                            </span>
+                        {% endfor %}
+                    {% else %}
+                    <span
+                        class="px-3 py-1.5 text-xs font-bold bg-slate-50 text-slate-600 rounded-xl border border-slate-100"
+                        >Figma</span
+                    >
+                    <span
+                        class="px-3 py-1.5 text-xs font-bold bg-slate-50 text-slate-600 rounded-xl border border-slate-100"
+                        >Adobe XD</span
+                    >
+                    <span
+                        class="px-3 py-1.5 text-xs font-bold bg-slate-50 text-slate-600 rounded-xl border border-slate-100"
+                        >UI Design</span
+                    >
+                    <span
+                        class="px-3 py-1.5 text-xs font-bold bg-slate-50 text-slate-600 rounded-xl border border-slate-100"
+                        >Prototyping</span
+                    >
+                    {% endif %}
+                </div>
+            </div>
         </div>
-        <div class="overflow-x-auto">
-            <table class="w-full text-left">
-                <thead>
-                    <tr class="bg-gray-50 dark:bg-gray-800/50 text-gray-600 dark:text-gray-400 text-sm uppercase">
-                        <th class="px-6 py-4 font-semibold">Job Title</th>
-                        <th class="px-6 py-4 font-semibold">Company</th>
-                        <th class="px-6 py-4 font-semibold">Date Applied</th>
-                        <th class="px-6 py-4 font-semibold">Status</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200 dark:divide-gray-800">
-                    {% for app in recent_applications %}
-                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
-                            <td class="px-6 py-4">
-                                <a href="{% url 'jobs_views:job_detail' app.job.slug %}" class="font-semibold text-gray-900 dark:text-white hover:text-indigo-600">
-                                    {{ app.job.title }}
-                                </a>
-                            </td>
-                            <td class="px-6 py-4 text-gray-600 dark:text-gray-400">{{ app.job.employer.company_name }}</td>
-                            <td class="px-6 py-4 text-sm">{{ app.created_at|date:"M d, Y" }}</td>
-                            <td class="px-6 py-4">
-                                <span class="px-3 py-1 text-xs font-bold rounded-full 
-                                    {% if app.status == 'applied' %}bg-blue-100 text-blue-700
-                                    {% elif app.status == 'reviewing' %}bg-yellow-100 text-yellow-700
-                                    {% elif app.status == 'interviewing' %}bg-purple-100 text-purple-700
-                                    {% elif app.status == 'hired' %}bg-green-100 text-green-700
-                                    {% elif app.status == 'rejected' %}bg-red-100 text-red-700
-                                    {% endif %}">
-                                    {{ app.get_status_display }}
-                                </span>
-                            </td>
-                        </tr>
-                    {% empty %}
-                        <tr>
-                            <td colspan="4" class="px-6 py-8 text-center text-gray-500">You haven't applied to any jobs yet.</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+
+        <!-- Right: Recent Applications & CVs / Documents -->
+        <div class="lg:col-span-7 space-y-6">
+            <!-- Recent Applications -->
+            <div
+                class="bg-white border border-slate-100 rounded-3xl shadow-sm overflow-hidden"
+            >
+                <div
+                    class="p-6 border-b border-slate-100 flex justify-between items-center"
+                >
+                    <div>
+                        <h2 class="text-lg font-extrabold text-slate-900">
+                            Recent Applications
+                        </h2>
+                        <p class="text-xs font-semibold text-slate-400 mt-0.5">
+                            Track live statuses of your applied roles
+                        </p>
+                    </div>
+                    <a
+                        href="{% url 'applications_views:my_applications' %}"
+                        class="text-xs font-bold text-indigo-600 bg-indigo-50/50 border border-indigo-100 rounded-full px-3 py-1.5 hover:bg-indigo-50 transition"
+                        >View All</a
+                    >
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr
+                                class="bg-slate-50/50 border-b border-slate-100 text-slate-400 text-[10px] font-extrabold tracking-widest uppercase"
+                            >
+                                <th class="px-6 py-4">Job Details</th>
+                                <th class="px-6 py-4">Date Applied</th>
+                                <th class="px-6 py-4">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody
+                            class="divide-y divide-slate-100 text-sm font-semibold"
+                        >
+                            {% for app in recent_applications %}
+                            <tr class="hover:bg-slate-50/50 transition">
+                                <td class="px-6 py-5">
+                                    <a
+                                        href="{% url 'jobs_views:job_detail' app.job.slug %}"
+                                        class="font-extrabold text-slate-900 hover:text-indigo-600 transition block"
+                                    >
+                                        {{ app.job.title }}
+                                    </a>
+                                    <span
+                                        class="text-xs text-slate-400 mt-0.5 block"
+                                        >{{
+                                        app.job.employer.company_name|default:app.job.employer.email
+                                        }}</span
+                                    >
+                                </td>
+                                <td class="px-6 py-5 text-slate-500 text-xs">
+                                    {{ app.created_at|date:"M d, Y" }}
+                                </td>
+                                <td class="px-6 py-5">
+                                    <span
+                                        class="inline-flex px-3 py-1 text-[11px] font-bold rounded-full {% if app.status == 'applied' %}bg-sky-50 text-sky-700 border border-sky-100/50 {% elif app.status == 'reviewing' %}bg-amber-50 text-amber-700 border border-amber-100/50 {% elif app.status == 'interviewing' %}bg-purple-50 text-purple-700 border border-purple-100/50 {% elif app.status == 'hired' %}bg-emerald-50 text-emerald-700 border border-emerald-100/50 {% elif app.status == 'rejected' %}bg-rose-50 text-rose-700 border border-rose-100/50 {% else %}bg-slate-50 text-slate-700 border border-slate-100 {% endif %}"
+                                    >
+                                        {{ app.get_status_display }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td
+                                    colspan="3"
+                                    class="px-6 py-12 text-center text-slate-400"
+                                >
+                                    <div
+                                        class="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-xl mx-auto mb-3"
+                                    >
+                                        <i
+                                            class="far fa-folder-open text-slate-300"
+                                        ></i>
+                                    </div>
+                                    <p class="font-semibold text-sm">
+                                        No applications found
+                                    </p>
+                                    <p class="text-xs text-slate-400 mt-0.5">
+                                        Start applying to get listed here.
+                                    </p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- CVs & Documents Section matching mockup -->
+            <div
+                class="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm space-y-4"
+            >
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="font-extrabold text-slate-900 text-base">
+                            CVs & Cover Letters
+                        </h3>
+                        <p class="text-xs font-semibold text-slate-400 mt-0.5">
+                            Manage documents used during applications
+                        </p>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <div
+                        class="p-4 border border-slate-200/80 rounded-2xl flex items-center justify-between hover:bg-slate-50 transition duration-300"
+                    >
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-10 h-10 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center text-lg"
+                            >
+                                <i class="far fa-file-pdf"></i>
+                            </div>
+                            <div>
+                                <p
+                                    class="text-xs font-extrabold text-slate-800"
+                                >
+                                    John_Doe_Resume.pdf
+                                </p>
+                                <p
+                                    class="text-[10px] font-semibold text-slate-400"
+                                >
+                                    245 KB &bull; Uploaded 2 days ago
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button
+                                class="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-600 transition hover:bg-slate-100 flex items-center justify-center"
+                            >
+                                <i class="fas fa-download text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div
+                        class="p-4 border border-slate-200/80 rounded-2xl flex items-center justify-between hover:bg-slate-50 transition duration-300"
+                    >
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-10 h-10 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center text-lg"
+                            >
+                                <i class="far fa-file-pdf"></i>
+                            </div>
+                            <div>
+                                <p
+                                    class="text-xs font-extrabold text-slate-800"
+                                >
+                                    John_Doe_Resume_v2.pdf
+                                </p>
+                                <p
+                                    class="text-[10px] font-semibold text-slate-400"
+                                >
+                                    260 KB &bull; Uploaded 1 week ago
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button
+                                class="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-600 transition hover:bg-slate-100 flex items-center justify-center"
+                            >
+                                <i class="fas fa-download text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>

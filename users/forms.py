@@ -35,7 +35,7 @@ class CandidateRegisterForm(BaseRegisterForm):
     def save(self, commit=True):
         user = super().save(commit=False)
         user.role = 'candidate'
-        user.is_active = True
+        user.is_active = True  # Active immediately; add email verification later
         user.set_password(self.cleaned_data["password"])
         if commit:
             user.save()
@@ -45,15 +45,15 @@ class CandidateRegisterForm(BaseRegisterForm):
 class EmployerRegisterForm(BaseRegisterForm):
     company_name = forms.CharField(max_length=255)
     company_description = forms.CharField(widget=forms.Textarea, required=False)
-    
+
     class Meta(BaseRegisterForm.Meta):
         fields = BaseRegisterForm.Meta.fields + ['company_name', 'company_description']
 
     def save(self, commit=True):
         user = super().save(commit=False)
         user.role = 'employer'
-        user.is_active = True
-        user.is_approved_employer = True
+        user.is_active = True  # Active immediately; add email verification later
+        user.is_approved_employer = True  # Auto-approve for now
         user.company_name = self.cleaned_data["company_name"]
         user.company_description = self.cleaned_data["company_description"]
         user.set_password(self.cleaned_data["password"])

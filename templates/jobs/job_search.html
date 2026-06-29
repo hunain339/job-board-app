@@ -21,6 +21,9 @@
                 <div>
                     <h3 class="font-bold mb-3">Filters</h3>
                     <form method="get" class="space-y-4">
+                        {% if query %}
+                            <input type="hidden" name="q" value="{{ query }}">
+                        {% endif %}
                         <div>
                             <label class="text-sm font-medium block mb-2">Job Type</label>
                             <select name="job_type" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-sm">
@@ -127,8 +130,8 @@
             {% if page_obj.has_other_pages %}
                 <div class="flex justify-center gap-2 mt-8">
                     {% if page_obj.has_previous %}
-                        <a href="?page=1" class="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">First</a>
-                        <a href="?page={{ page_obj.previous_page_number }}" class="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">Previous</a>
+                        <a href="?{% url_replace page=1 %}" class="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">First</a>
+                        <a href="?{% url_replace page=page_obj.previous_page_number %}" class="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">Previous</a>
                     {% endif %}
                     
                     <div class="flex items-center gap-2">
@@ -136,8 +139,8 @@
                     </div>
                     
                     {% if page_obj.has_next %}
-                        <a href="?page={{ page_obj.next_page_number }}" class="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">Next</a>
-                        <a href="?page={{ page_obj.paginator.num_pages }}" class="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">Last</a>
+                        <a href="?{% url_replace page=page_obj.next_page_number %}" class="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">Next</a>
+                        <a href="?{% url_replace page=page_obj.paginator.num_pages %}" class="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">Last</a>
                     {% endif %}
                 </div>
             {% endif %}

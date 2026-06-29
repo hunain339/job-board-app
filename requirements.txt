@@ -1,22 +1,33 @@
+# Core Django
 Django==5.0.1
 djangorestframework==3.14.0
-djangorestframework-simplejwt==5.3.2
+djangorestframework-simplejwt==5.3.1
 django-filter==24.1
-Pillow==10.1.0
 django-cors-headers==4.3.1
 django-htmx==1.17.2
-python-dotenv==1.0.0
-celery==5.3.4
+
+# Database
+psycopg2-binary==2.9.9
+
+# Cache & Task Queue
 redis==5.0.1
+celery==5.3.6
+
+# Storage
+Pillow==10.1.0
+python-magic==0.4.27
+django-storages[s3]==1.14.4
+boto3==1.35.36
+
+# Configuration
+python-decouple==3.8
+
+# WSGI server
+gunicorn==21.2.0
+
+# Testing (keep pinned; excluded from Docker image via .dockerignore if desired)
 pytest==7.4.3
 pytest-django==4.7.0
 pytest-cov==4.1.0
 factory-boy==3.3.0
 Faker==22.0.0
-elasticsearch==8.11.0
-elasticsearch-dsl==8.11.0
-django-elasticsearch-dsl==8.0.0
-django-mail-templated==3.0.1
-gunicorn==21.2.0
-psycopg2-binary==2.9.9
-python-decouple==3.8

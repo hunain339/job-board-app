@@ -40,6 +40,25 @@ class TestUserRegistration:
         response = api_client.post('/api/users/register_employer/', data)
         assert response.status_code == status.HTTP_201_CREATED
     
+    def test_registration_privilege_escalation(self, api_client):
+        """Test that users cannot set role=admin or is_staff=True during registration."""
+        data = {
+            'email': 'hacker@test.com',
+            'password': 'testpassword123',
+            'password_confirm': 'testpassword123',
+            'role': 'admin',
+            'is_staff': True,
+            'is_superuser': True,
+        }
+        
+        response = api_client.post('/api/users/register_candidate/', data)
+        assert response.status_code == status.HTTP_201_CREATED
+        
+        user = User.objects.get(email='hacker@test.com')
+        assert user.role == 'candidate'  # Should be forced to endpoint default
+        assert user.is_staff is False
+        assert user.is_superuser is False
+
     def test_password_mismatch(self, api_client):
         """Test password mismatch validation."""
         data = {
@@ -86,3 +105,74 @@ class TestUserProfile:
         # Verify new password works
         user.refresh_from_db()
         assert user.check_password('newpassword123')
+
+    def test_profile_update_privilege_escalation(self, authenticated_client, user):
+        """Test that users cannot update their role or staff status via profile update."""
+        original_role = user.role
+        data = {
+            'role': 'admin',
+            'is_staff': True,
+            'is_superuser': True,
+            'first_name': 'Hacked'
+        }
+        
+        response = authenticated_client.patch(f'/api/users/{user.id}/', data)
+        assert response.status_code in (status.HTTP_200_OK, status.HTTP_202_ACCEPTED)
+        
+        user.refresh_from_db()
+        assert user.role == original_role
+        assert user.first_name == 'Hacked'  # Ensuring the valid update went through
+        assert user.is_staff is False
+        assert user.is_superuser is False
+
+    def test_candidate_requires_verification(self, api_client):
+        """Test new candidate cannot authenticate until verified."""
+        data = {
+            'email': 'unverified@test.com',
+            'password': 'testpassword123',
+            'password_confirm': 'testpassword123',
+            'first_name': 'John',
+        }
+        api_client.post('/api/users/register_candidate/', data)
+        
+        login_data = {'email': 'unverified@test.com', 'password': 'testpassword123'}
+        # Assuming JWT is configured
+        response = api_client.post('/api/token/', login_data)
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        
+        # Verify
+        from users.models import EmailVerificationToken
+        token = EmailVerificationToken.objects.get(user__email='unverified@test.com').token
+        api_client.post('/api/users/verify_email/', {'token': token})
+        
+        response = api_client.post('/api/token/', login_data)
+        assert response.status_code == status.HTTP_200_OK
+
+    def test_employer_requires_approval(self, api_client):
+        """Test new employer cannot authenticate until verified AND approved."""
+        data = {
+            'email': 'unapproved@employer.com',
+            'password': 'testpassword123',
+            'password_confirm': 'testpassword123',
+            'company_name': 'Acme Corp',
+        }
+        api_client.post('/api/users/register_employer/', data)
+        
+        login_data = {'email': 'unapproved@employer.com', 'password': 'testpassword123'}
+        response = api_client.post('/api/token/', login_data)
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    def test_token_blacklisted_on_logout(self, authenticated_client, user):
+        """Test that refresh token is blacklisted on logout."""
+        from rest_framework_simplejwt.tokens import RefreshToken
+        refresh = RefreshToken.for_user(user)
+        
+        # Logout
+        response = authenticated_client.post('/api/users/logout/', {'refresh': str(refresh)})
+        assert response.status_code == status.HTTP_200_OK
+        
+        # Try to use refresh token again to get a new access token
+        from rest_framework.test import APIClient
+        anon_client = APIClient()
+        refresh_response = anon_client.post('/api/token/refresh/', {'refresh': str(refresh)})
+        assert refresh_response.status_code == status.HTTP_401_UNAUTHORIZED

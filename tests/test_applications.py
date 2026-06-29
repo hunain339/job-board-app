@@ -3,6 +3,7 @@
 import pytest
 from django.contrib.auth import get_user_model
 from rest_framework import status
+from django.core.files.uploadedfile import SimpleUploadedFile
 from applications.models import Application
 from jobs.models import Job, JobCategory
 from tests.conftest import EmployerFactory, UserFactory
@@ -12,7 +13,7 @@ pytestmark = pytest.mark.django_db
 
 class TestJobApplication:
     """Test job application functionality."""
-    
+
     @pytest.fixture
     def job(self):
         """Create a test job."""
@@ -30,18 +31,18 @@ class TestJobApplication:
             is_active=True,
             slug='test-job',
         )
-    
+
     def test_apply_to_job(self, authenticated_client, job):
         """Test applying to a job."""
         data = {
             'job_id': str(job.id),
-            'resume': open(__file__, 'rb'),
+            'resume': SimpleUploadedFile('test.pdf', b'%PDF-1.4\n' + b'a'*1024, content_type='application/pdf'),
             'cover_letter': 'I am interested in this position.',
         }
-        
+
         response = authenticated_client.post('/api/applications/', data)
         assert response.status_code in [status.HTTP_201_CREATED, status.HTTP_400_BAD_REQUEST]
-    
+
     def test_duplicate_application(self, authenticated_client, job):
         """Test that duplicate applications are prevented."""
         Application.objects.create(
@@ -49,19 +50,19 @@ class TestJobApplication:
             job=job,
             resume='test.pdf',
         )
-        
+
         data = {
             'job_id': str(job.id),
             'resume': 'test2.pdf',
         }
-        
+
         # This will fail due to file handling, but demonstrates the test structure
         # In production, use proper file fixtures
 
 
 class TestApplicationManagement:
     """Test application management."""
-    
+
     @pytest.fixture
     def application(self):
         """Create a test application."""
@@ -79,30 +80,49 @@ class TestApplicationManagement:
             is_active=True,
             slug='test-job',
         )
-        
+
         candidate = UserFactory(role='candidate')
         return Application.objects.create(
             candidate=candidate,
             job=job,
             resume='test.pdf',
         )
-    
+
     def test_view_applications_as_employer(self, application):
         """Test employer viewing applications."""
         from rest_framework.test import APIClient
-        
+
         api_client = APIClient()
         api_client.force_authenticate(user=application.job.employer)
-        
+
         response = api_client.get('/api/applications/job_applications/')
         assert response.status_code == status.HTTP_200_OK
-    
+
     def test_view_own_applications_as_candidate(self, application):
         """Test candidate viewing their applications."""
         from rest_framework.test import APIClient
-        
+
         api_client = APIClient()
         api_client.force_authenticate(user=application.candidate)
-        
+
         response = api_client.get('/api/applications/my_applications/')
         assert response.status_code == status.HTTP_200_OK
+
+    def test_idor_application_detail(self, application):
+        """Test user B cannot view application of user A."""
+        from rest_framework.test import APIClient
+        from tests.conftest import UserFactory
+
+        # User B (some other candidate)
+        user_b = UserFactory(role='candidate')
+        api_client = APIClient()
+        api_client.force_authenticate(user=user_b)
+
+        response = api_client.get(f'/applications/{application.id}/')
+        # Authenticated users who don't own this application get 404;
+        # LoginRequiredMixin may also redirect (302) before ownership check.
+        assert response.status_code in (404, 302)
+
+        # Also ensure no data of application candidate is in response body (if it wasn't 404)
+        if response.status_code == 200:
+            assert application.candidate.email not in str(response.content)

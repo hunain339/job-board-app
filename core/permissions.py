@@ -38,7 +38,7 @@ class IsApprovedEmployer(permissions.BasePermission):
             request.user and
             request.user.is_authenticated and
             request.user.role == 'employer' and
-            request.user.is_active
+            request.user.is_approved_employer
         )
 
 

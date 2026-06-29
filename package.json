@@ -4,8 +4,8 @@
   "description": "Job Board Platform",
   "main": "index.js",
   "scripts": {
-    "build:css": "tailwindcss -i ./static/css/input.css -o ./static/css/output.css",
-    "watch:css": "tailwindcss -i ./static/css/input.css -o ./static/css/output.css --watch"
+    "build:css": "npx @tailwindcss/cli -i ./static/css/input.css -o ./static/css/output.css",
+    "watch:css": "npx @tailwindcss/cli -i ./static/css/input.css -o ./static/css/output.css --watch"
   },
   "keywords": ["job", "board", "tailwind"],
   "author": "",

@@ -1,0 +1,14 @@
+version: '3.9'
+
+services:
+  web:
+    volumes:
+      - .:/app
+    environment:
+      - DEBUG=True
+
+  celery:
+    volumes:
+      - .:/app
+    environment:
+      - DEBUG=True
