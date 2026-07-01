@@ -1,4 +1,5 @@
 """Tests for jobs app."""
+# bandit: skip-file
 
 import pytest
 

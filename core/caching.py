@@ -17,7 +17,8 @@ CACHE_TIMEOUT_LONG = 86400  # 24 hours
 def cache_key(*args, **kwargs):
     """Generate a consistent cache key from arguments."""
     key_data = str(args) + str(sorted(kwargs.items()))
-    return hashlib.md5(key_data.encode()).hexdigest()
+    # Use SHA-256 for stronger hash used for cache keys (Bandit B324)
+    return hashlib.sha256(key_data.encode()).hexdigest()
 
 
 def invalidate_cache(*patterns):
