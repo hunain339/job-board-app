@@ -19,8 +19,12 @@ class JobPostForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         for field in self.fields:
             if field != 'is_remote':
-                self.fields[field].widget.attrs.update({
-                    'class': 'w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-600'
-                })
+                css_class = (
+                    'w-full px-4 py-3 border border-gray-300 '
+                    'dark:border-gray-700 rounded-lg bg-white '
+                    'dark:bg-gray-800 focus:outline-none '
+                    'focus:ring-2 focus:ring-indigo-600'
+                )
+                self.fields[field].widget.attrs.update({'class': css_class})
             else:
                 self.fields[field].widget.attrs.update({'class': 'rounded'})

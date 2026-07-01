@@ -24,7 +24,10 @@ class TestJobPosting:
         """Test creating a job posting as employer."""
         data = {
             'title': 'Senior Python Developer',
-            'description': 'We are looking for a senior Python developer with 5+ years of experience.',
+            'description': (
+                'We are looking for a senior Python developer with '
+                '5+ years of experience.'
+            ),
             'job_type': 'full_time',
             'category_id': category.id,
             'location': 'San Francisco, CA',

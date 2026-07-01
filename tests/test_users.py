@@ -42,7 +42,8 @@ class TestUserRegistration:
         assert response.status_code == status.HTTP_201_CREATED
 
     def test_registration_privilege_escalation(self, api_client):
-        """Test that users cannot set role=admin or is_staff=True during registration."""
+        """Test that users cannot set role=admin or is_staff=True
+        during registration."""
         data = {
             'email': 'hacker@test.com',
             'password': 'testpassword123',
@@ -108,7 +109,8 @@ class TestUserProfile:
         assert user.check_password('newpassword123')
 
     def test_profile_update_privilege_escalation(self, authenticated_client, user):
-        """Test that users cannot update their role or staff status via profile update."""
+        """Test that users cannot update their role or staff status
+        via profile update."""
         original_role = user.role
         data = {
             'role': 'admin',

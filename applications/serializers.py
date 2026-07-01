@@ -11,15 +11,26 @@ from .models import Application, ApplicationNote, ApplicationStatusHistory
 class ApplicationListSerializer(serializers.ModelSerializer):
     """Serializer for application list."""
 
-    candidate_email = serializers.CharField(source='candidate.email', read_only=True)
-    job_title = serializers.CharField(source='job.title', read_only=True)
-    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    candidate_email = serializers.CharField(
+        source='candidate.email', read_only=True
+    )
+    job_title = serializers.CharField(
+        source='job.title', read_only=True
+    )
+    status_display = serializers.CharField(
+        source='get_status_display', read_only=True
+    )
 
     class Meta:
         model = Application
         fields = (
-            'id', 'candidate_email', 'job_title', 'status', 'status_display',
-            'rating', 'created_at'
+            'id',
+            'candidate_email',
+            'job_title',
+            'status',
+            'status_display',
+            'rating',
+            'created_at',
         )
 
 
@@ -40,7 +51,8 @@ class ApplicationStatusHistorySerializer(serializers.ModelSerializer):
         source='get_old_status_display', read_only=True)
     new_status_display = serializers.CharField(
         source='get_new_status_display', read_only=True)
-    changed_by_email = serializers.CharField(source='changed_by.email', read_only=True)
+    changed_by_email = serializers.CharField(
+        source='changed_by.email', read_only=True)
 
     class Meta:
         model = ApplicationStatusHistory
@@ -60,22 +72,39 @@ class ApplicationDetailSerializer(serializers.ModelSerializer):
 
     candidate = UserSummarySerializer(read_only=True)
     job = JobSummarySerializer(read_only=True)
-    status_display = serializers.CharField(source='get_status_display', read_only=True)
-    employer_notes = ApplicationNoteSerializer(many=True, read_only=True)
+    status_display = serializers.CharField(
+        source='get_status_display', read_only=True
+    )
+    employer_notes = ApplicationNoteSerializer(
+        many=True, read_only=True
+    )
     status_history = serializers.SerializerMethodField()
 
     class Meta:
         model = Application
         fields = (
-            'id', 'candidate', 'job', 'resume', 'cover_letter', 'status',
-            'status_display', 'rating', 'notes', 'rejection_reason',
-            'employer_notes', 'status_history', 'created_at', 'updated_at'
+            'id',
+            'candidate',
+            'job',
+            'resume',
+            'cover_letter',
+            'status',
+            'status_display',
+            'rating',
+            'notes',
+            'rejection_reason',
+            'employer_notes',
+            'status_history',
+            'created_at',
+            'updated_at',
         )
 
     def get_status_history(self, obj):
         """Required prefetch: status_history."""
         return ApplicationStatusHistorySerializer(
-            obj.status_history.all(), many=True).data
+            obj.status_history.all(),
+            many=True,
+        ).data
 
 
 class ApplicationCreateSerializer(serializers.ModelSerializer):
@@ -93,8 +122,9 @@ class ApplicationCreateSerializer(serializers.ModelSerializer):
         from django.conf import settings
 
         if value.size > settings.MAX_RESUME_SIZE:
+            size_mb = settings.MAX_RESUME_SIZE / (1024 * 1024)
             raise serializers.ValidationError(
-                f"File size exceeds {settings.MAX_RESUME_SIZE / (1024 * 1024):.1f}MB limit"
+                f"File size exceeds {size_mb:.1f}MB limit"
             )
 
         return value

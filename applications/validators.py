@@ -54,8 +54,10 @@ class SecureFileValidator:
                 'application/msword',
                 'application/vnd.ms-office'],
             'docx': [
-                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                'application/zip'],
+                'application/vnd.openxmlformats-'
+                'officedocument.wordprocessingml.document',
+                'application/zip',
+            ],
         }
 
     def __call__(self, file):
@@ -69,10 +71,10 @@ class SecureFileValidator:
 
         ext = os.path.splitext(file.name)[1][1:].lower()
         if ext not in self.allowed_extensions:
+            allowed = ', '.join(self.allowed_extensions)
             raise ValidationError(
-                f"Unsupported file extension '{ext}'. Allowed extensions are: {
-                    ', '.join(
-                        self.allowed_extensions)}")
+                f"Unsupported file extension '{ext}'. Allowed extensions are: {allowed}"
+            )
 
         # Check MIME type using python-magic
         # Read the first 2048 bytes for magic numbers

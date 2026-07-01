@@ -89,11 +89,21 @@ class JobApplicationsView(LoginRequiredMixin, ListView):
         counts = cache.get_or_set(
             counts_cache_key,
             lambda: {
-                'total_applications': Application.objects.filter(job=self.job).count(),
-                'applied_count': Application.objects.filter(job=self.job, status='applied').count(),
-                'reviewing_count': Application.objects.filter(job=self.job, status='reviewing').count(),
-                'interview_count': Application.objects.filter(job=self.job, status='interview').count(),
-                'hired_count': Application.objects.filter(job=self.job, status='hired').count(),
+                'total_applications': (
+                    Application.objects.filter(job=self.job)
+                ).count(),
+                'applied_count': (
+                    Application.objects.filter(job=self.job, status='applied')
+                ).count(),
+                'reviewing_count': (
+                    Application.objects.filter(job=self.job, status='reviewing')
+                ).count(),
+                'interview_count': (
+                    Application.objects.filter(job=self.job, status='interview')
+                ).count(),
+                'hired_count': (
+                    Application.objects.filter(job=self.job, status='hired')
+                ).count(),
             },
             300,
         )
@@ -146,8 +156,8 @@ class WithdrawApplicationView(LoginRequiredMixin, View):
                 application.delete()
                 messages.success(request, 'Application withdrawn successfully.')
             else:
-                messages.error(
-                    request, 'Cannot withdraw application that is already being reviewed.')
+                msg = 'Cannot withdraw application that is already being reviewed.'
+                messages.error(request, msg)
         except Application.DoesNotExist:
             pass  # Already withdrawn or does not exist
         return redirect('applications_views:my_applications')
@@ -216,8 +226,8 @@ class ViewResumeView(LoginRequiredMixin, View):
 
         response = HttpResponse(
             application.resume.read(),
-            content_type='application/pdf')
-        response['Content-Disposition'] = f'inline; filename="{
-            application.resume.name.split("/")[
-                -1]}"'
+            content_type='application/pdf',
+        )
+        filename = application.resume.name.split('/')[-1]
+        response['Content-Disposition'] = f'inline; filename="{filename}"'
         return response

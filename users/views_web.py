@@ -62,14 +62,15 @@ class LoginView(FormView):
 
         if user is not None:
             if not user.is_active:
-                messages.error(
-                    self.request,
-                    'Your account is not active. Please verify your email or contact support.')
+                msg = (
+                    'Your account is not active. Please verify your email '
+                    'or contact support.'
+                )
+                messages.error(self.request, msg)
                 return self.form_invalid(form)
             login(self.request, user)
-            messages.success(
-                self.request, f'Welcome back, {
-                    user.first_name or user.email}!')
+            name = user.first_name or user.email
+            messages.success(self.request, f'Welcome back, {name}!')
             return super().form_valid(form)
         else:
             messages.error(self.request, 'Invalid email or password.')
@@ -121,11 +122,17 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             from applications.models import Application
             from jobs.models import JobSavedByUser
             counts = cache.get_or_set(
-                f'dashboard_candidate_counts_{
-                    user.id}', lambda: {
+                f'dashboard_candidate_counts_{user.id}',
+                lambda: {
                     'applications_count': Application.objects.filter(
-                        candidate=user).count(), 'saved_jobs_count': JobSavedByUser.objects.filter(
-                        candidate=user).count(), }, 300, )
+                        candidate=user
+                    ).count(),
+                    'saved_jobs_count': JobSavedByUser.objects.filter(
+                        candidate=user
+                    ).count(),
+                },
+                300,
+            )
             context.update(counts)
             context['recent_applications'] = cache.get_or_set(
                 f'dashboard_candidate_recent_{user.id}',
@@ -140,14 +147,15 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             from jobs.models import Job
             from applications.models import Application
             counts = cache.get_or_set(
-                f'dashboard_employer_counts_{
-                    user.id}',
+                f'dashboard_employer_counts_{user.id}',
                 lambda: {
                     'active_jobs_count': Job.objects.filter(
                         employer=user,
-                        is_active=True).count(),
+                        is_active=True,
+                    ).count(),
                     'total_applications_count': Application.objects.filter(
-                        job__employer=user).count(),
+                        job__employer=user
+                    ).count(),
                 },
                 300,
             )

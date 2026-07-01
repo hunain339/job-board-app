@@ -11,18 +11,54 @@ class UserAdmin(BaseUserAdmin):
 
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
-        ('Personal Info', {'fields': ('first_name', 'last_name', 'avatar', 'bio', 'phone_number', 'location', 'website')}),
-        ('Role & Permissions', {
-            'fields': ('role', 'is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')
-        }),
-        ('Employer Info', {
-            'fields': (
-                'company_name', 'company_description', 'company_website',
-                'company_logo', 'is_approved_employer', 'approval_status'
-            ),
-            'classes': ('collapse',)
-        }),
-        ('Timestamps', {'fields': ('date_joined', 'last_login', 'updated_at'), 'classes': ('collapse',)}),
+        (
+            'Personal Info',
+            {
+                'fields': (
+                    'first_name',
+                    'last_name',
+                    'avatar',
+                    'bio',
+                    'phone_number',
+                    'location',
+                    'website',
+                )
+            },
+        ),
+        (
+            'Role & Permissions',
+            {
+                'fields': (
+                    'role',
+                    'is_active',
+                    'is_staff',
+                    'is_superuser',
+                    'groups',
+                    'user_permissions',
+                )
+            },
+        ),
+        (
+            'Employer Info',
+            {
+                'fields': (
+                    'company_name',
+                    'company_description',
+                    'company_website',
+                    'company_logo',
+                    'is_approved_employer',
+                    'approval_status',
+                ),
+                'classes': ('collapse',),
+            },
+        ),
+        (
+            'Timestamps',
+            {
+                'fields': ('date_joined', 'last_login', 'updated_at'),
+                'classes': ('collapse',),
+            },
+        ),
     )
 
     add_fieldsets = (
@@ -39,13 +75,15 @@ class UserAdmin(BaseUserAdmin):
         'role',
         'is_active',
         'is_approved_employer',
-        'date_joined')
+        'date_joined',
+    )
     list_filter = (
         'role',
         'is_active',
         'is_approved_employer',
         'approval_status',
-        'date_joined')
+        'date_joined',
+    )
     search_fields = ('email', 'first_name', 'last_name', 'company_name')
     ordering = ('-date_joined',)
     readonly_fields = ('date_joined', 'last_login', 'updated_at')

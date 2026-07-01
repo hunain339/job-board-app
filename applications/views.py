@@ -13,7 +13,11 @@ from .serializers import (
     ApplicationCreateSerializer, ApplicationUpdateSerializer,
     ApplicationNoteSerializer
 )
-from .services import add_application_note, update_application_status, withdraw_application
+from .services import (
+    add_application_note,
+    update_application_status,
+    withdraw_application,
+)
 
 
 class ApplicationViewSet(viewsets.ModelViewSet):
@@ -197,9 +201,11 @@ class ApplicationViewSet(viewsets.ModelViewSet):
             )
 
         if application.status in ['hired', 'rejected']:
+            status_display = application.get_status_display()
+            msg = f"Cannot withdraw application with status {status_display}."
             return Response(
-                {'detail': f'Cannot withdraw application with status {application.get_status_display()}.'},
-                status=status.HTTP_400_BAD_REQUEST
+                {'detail': msg},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         withdraw_application(application=application)

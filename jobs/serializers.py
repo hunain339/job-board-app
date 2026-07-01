@@ -15,9 +15,12 @@ class JobCategorySerializer(serializers.ModelSerializer):
 class JobListSerializer(serializers.ModelSerializer):
     """Serializer for job list view."""
 
-    employer_email = serializers.CharField(source='employer.email', read_only=True)
+    employer_email = serializers.CharField(
+        source='employer.email', read_only=True
+    )
     employer_company = serializers.CharField(
-        source='employer.company_name', read_only=True)
+        source='employer.company_name', read_only=True
+    )
     job_type_display = serializers.CharField(
         source='get_job_type_display', read_only=True)
     experience_display = serializers.CharField(
@@ -45,7 +48,8 @@ class JobListSerializer(serializers.ModelSerializer):
             'is_featured',
             'views_count',
             'applications_count',
-            'is_saved')
+            'is_saved',
+        )
 
     def get_is_saved(self, obj):
         """Check if job is saved by current user."""
@@ -93,7 +97,11 @@ class JobDetailSerializer(serializers.ModelSerializer):
         if annotated is not None:
             return bool(annotated)
         request = self.context.get('request')
-        if request and request.user.is_authenticated and request.user.role == 'candidate':
+        if (
+            request
+            and request.user.is_authenticated
+            and request.user.role == 'candidate'
+        ):
             return JobSavedByUser.objects.filter(
                 candidate=request.user, job=obj
             ).exists()

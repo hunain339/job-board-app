@@ -17,7 +17,11 @@ class User(AbstractUser):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(unique=True)
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='candidate')
+    role = models.CharField(
+        max_length=20,
+        choices=ROLE_CHOICES,
+        default='candidate',
+    )
     is_active = models.BooleanField(default=False)  # Email verification required
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
     bio = models.TextField(blank=True, null=True, max_length=500)
@@ -29,14 +33,20 @@ class User(AbstractUser):
     company_name = models.CharField(max_length=255, blank=True, null=True)
     company_description = models.TextField(blank=True, null=True)
     company_website = models.URLField(
-        blank=True, null=True, validators=[
-            URLValidator()])
+        blank=True,
+        null=True,
+        validators=[URLValidator()],
+    )
     company_logo = models.ImageField(upload_to='company_logos/', blank=True, null=True)
     is_approved_employer = models.BooleanField(default=False)
     approval_status = models.CharField(
         max_length=20,
-        choices=(('pending', 'Pending'), ('approved', 'Approved'), ('rejected', 'Rejected')),
-        default='pending'
+        choices=(
+            ('pending', 'Pending'),
+            ('approved', 'Approved'),
+            ('rejected', 'Rejected'),
+        ),
+        default='pending',
     )
 
     # Timestamps
