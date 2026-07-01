@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ profile_user.get_full_name|default:profile_user.email }} | Profile{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto py-12">
+    <div class="bg-white shadow rounded-lg p-8">
+        <h1 class="text-3xl font-bold mb-4">{{ profile_user.get_full_name|default:profile_user.email }}</h1>
+        <p class="text-sm text-slate-500 mb-6">Role: {{ profile_user.get_role_display }}</p>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+            <div>
+                <h2 class="text-lg font-semibold">Contact</h2>
+                <p class="text-sm text-slate-600">Email: {{ profile_user.email }}</p>
+                {% if profile_user.location %}
+                    <p class="text-sm text-slate-600">Location: {{ profile_user.location }}</p>
+                {% endif %}
+            </div>
+            <div>
+                <h2 class="text-lg font-semibold">About</h2>
+                <p class="text-sm text-slate-600">{{ profile_user.bio|default:'No bio available.' }}</p>
+            </div>
+        </div>
+
+        {% if profile_user.profile %}
+            <div class="mt-8">
+                <h2 class="text-lg font-semibold mb-2">Profile Details</h2>
+                <dl class="grid gap-2 sm:grid-cols-2">
+                    <div>
+                        <dt class="font-semibold text-slate-700">Headline</dt>
+                        <dd class="text-sm text-slate-600">{{ profile_user.profile.headline|default:'N/A' }}</dd>
+                    </div>
+                    <div>
+                        <dt class="font-semibold text-slate-700">Experience Years</dt>
+                        <dd class="text-sm text-slate-600">{{ profile_user.profile.experience_years }}</dd>
+                    </div>
+                    <div class="sm:col-span-2">
+                        <dt class="font-semibold text-slate-700">Skills</dt>
+                        <dd class="text-sm text-slate-600">{{ profile_user.profile.skills|default:'N/A' }}</dd>
+                    </div>
+                </dl>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
