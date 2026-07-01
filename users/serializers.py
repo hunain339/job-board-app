@@ -157,7 +157,12 @@ class EmployerApprovalSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'email', 'company_name', 'is_approved_employer', 'approval_status')
+        fields = (
+            'id',
+            'email',
+            'company_name',
+            'is_approved_employer',
+            'approval_status')
         read_only_fields = ('id', 'email', 'company_name')
 
 

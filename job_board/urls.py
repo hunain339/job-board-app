@@ -19,18 +19,29 @@ urlpatterns = [
 
     # JWT Authentication
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/auth/login/', EmailTokenObtainPairView.as_view(), name='email_token_obtain'),
+    path(
+        'api/auth/login/',
+        EmailTokenObtainPairView.as_view(),
+        name='email_token_obtain'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
     # API endpoints
     path('api/users/', include('users.urls', namespace='api_users')),
     path('api/jobs/', include('jobs.urls', namespace='api_jobs')),
-    path('api/applications/', include('applications.urls', namespace='api_applications')),
+    path(
+        'api/applications/',
+        include(
+            'applications.urls',
+            namespace='api_applications')),
 
     # Web views
     path('', include('jobs.urls_views', namespace='jobs_views')),
     path('users/', include('users.urls_views', namespace='users_views')),
-    path('applications/', include('applications.urls_views', namespace='applications_views')),
+    path(
+        'applications/',
+        include(
+            'applications.urls_views',
+            namespace='applications_views')),
 ]
 
 if settings.DEBUG:

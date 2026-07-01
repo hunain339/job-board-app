@@ -15,41 +15,34 @@ SAMPLE_CATEGORIES = [
     'Engineering', 'Design', 'Product', 'Marketing', 'Sales'
 ]
 
-SAMPLE_JOBS = [
-    {
-        'title': 'Senior Backend Engineer',
-        'location': 'Remote',
-        'job_type': 'full_time',
-        'experience_level': 'senior',
-        'is_remote': True,
-        'salary_min': 90000,
-        'salary_max': 140000,
-        'required_skills': 'Python, Django, PostgreSQL, Docker',
-        'description': 'Build and maintain scalable backend systems. Work closely with product and design.'
-    },
-    {
-        'title': 'Product Designer',
-        'location': 'New York, NY',
-        'job_type': 'full_time',
-        'experience_level': 'mid',
-        'is_remote': False,
-        'salary_min': 70000,
-        'salary_max': 110000,
-        'required_skills': 'Figma, UX, Prototyping',
-        'description': 'Design delightful user experiences and collaborate with engineers.'
-    },
-    {
-        'title': 'Growth Marketing Manager',
-        'location': 'London, UK',
-        'job_type': 'full_time',
-        'experience_level': 'mid',
-        'is_remote': True,
-        'salary_min': 60000,
-        'salary_max': 100000,
-        'required_skills': 'SEO, Analytics, Content',
-        'description': 'Lead growth experiments and own marketing funnels.'
-    }
-]
+SAMPLE_JOBS = [{'title': 'Senior Backend Engineer',
+                'location': 'Remote',
+                'job_type': 'full_time',
+                'experience_level': 'senior',
+                'is_remote': True,
+                'salary_min': 90000,
+                'salary_max': 140000,
+                'required_skills': 'Python, Django, PostgreSQL, Docker',
+                'description': 'Build and maintain scalable backend systems. Work closely with product and design.'},
+               {'title': 'Product Designer',
+                'location': 'New York, NY',
+                'job_type': 'full_time',
+                'experience_level': 'mid',
+                'is_remote': False,
+                'salary_min': 70000,
+                'salary_max': 110000,
+                'required_skills': 'Figma, UX, Prototyping',
+                'description': 'Design delightful user experiences and collaborate with engineers.'},
+               {'title': 'Growth Marketing Manager',
+                'location': 'London, UK',
+                'job_type': 'full_time',
+                'experience_level': 'mid',
+                'is_remote': True,
+                'salary_min': 60000,
+                'salary_max': 100000,
+                'required_skills': 'SEO, Analytics, Content',
+                'description': 'Lead growth experiments and own marketing funnels.'}]
+
 
 class Command(BaseCommand):
     help = 'Create sample job categories, employer and job posts (development only)'
@@ -81,7 +74,8 @@ class Command(BaseCommand):
 
         # create sample jobs
         for i, data in enumerate(SAMPLE_JOBS, start=1):
-            cat = categories.get('Engineering') if i == 1 else categories.get('Design' if i==2 else 'Marketing')
+            cat = categories.get('Engineering') if i == 1 else categories.get(
+                'Design' if i == 2 else 'Marketing')
             slug = slugify(f"{data['title']}-{i}")
             job, created = Job.objects.get_or_create(
                 title=data['title'],

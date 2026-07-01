@@ -4,18 +4,20 @@ from .models import UserProfile
 
 User = get_user_model()
 
+
 class LoginForm(forms.Form):
     email = forms.EmailField()
     password = forms.CharField(widget=forms.PasswordInput)
 
+
 class BaseRegisterForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput)
     password_confirm = forms.CharField(widget=forms.PasswordInput)
-    
+
     class Meta:
         model = User
         fields = ['email', 'first_name', 'last_name', 'password']
-    
+
     def save(self, commit=True):
         user = super().save(commit=False)
         user.username = user.email  # Ensure username is unique and set to email
@@ -31,6 +33,7 @@ class BaseRegisterForm(forms.ModelForm):
             raise forms.ValidationError("Passwords do not match")
         return cleaned_data
 
+
 class CandidateRegisterForm(BaseRegisterForm):
     def save(self, commit=True):
         user = super().save(commit=False)
@@ -41,6 +44,7 @@ class CandidateRegisterForm(BaseRegisterForm):
             user.save()
             UserProfile.objects.get_or_create(user=user)
         return user
+
 
 class EmployerRegisterForm(BaseRegisterForm):
     company_name = forms.CharField(max_length=255)

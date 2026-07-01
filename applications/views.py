@@ -20,7 +20,10 @@ class ApplicationViewSet(viewsets.ModelViewSet):
     """ViewSet for job applications."""
 
     permission_classes = [IsAuthenticated]
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter]
     filterset_fields = ['status', 'job', 'candidate']
     search_fields = ['candidate__email', 'job__title']
     ordering_fields = ['created_at', 'rating']
@@ -102,7 +105,10 @@ class ApplicationViewSet(viewsets.ModelViewSet):
             **serializer.validated_data,
         )
         application.refresh_from_db()
-        return Response(ApplicationDetailSerializer(application, context={'request': request}).data)
+        return Response(
+            ApplicationDetailSerializer(
+                application, context={
+                    'request': request}).data)
 
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def add_note(self, request, pk=None):
@@ -140,7 +146,9 @@ class ApplicationViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_403_FORBIDDEN
             )
 
-        applications = Application.objects.select_related('candidate', 'job', 'job__employer', 'job__category').filter(candidate=request.user)
+        applications = Application.objects.select_related(
+            'candidate', 'job', 'job__employer', 'job__category').filter(
+            candidate=request.user)
         page = self.paginate_queryset(applications)
 
         if page is not None:
@@ -159,7 +167,9 @@ class ApplicationViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_403_FORBIDDEN
             )
 
-        applications = Application.objects.select_related('candidate', 'job', 'job__employer', 'job__category').filter(job__employer=request.user)
+        applications = Application.objects.select_related(
+            'candidate', 'job', 'job__employer', 'job__category').filter(
+            job__employer=request.user)
 
         # Filter by status if provided
         status_filter = request.query_params.get('status', None)

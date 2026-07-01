@@ -1,12 +1,13 @@
 from django import forms
-from .models import Job, JobCategory
+from .models import Job
+
 
 class JobPostForm(forms.ModelForm):
     class Meta:
         model = Job
         fields = [
-            'title', 'description', 'job_type', 'experience_level', 
-            'location', 'is_remote', 'salary_min', 'salary_max', 
+            'title', 'description', 'job_type', 'experience_level',
+            'location', 'is_remote', 'salary_min', 'salary_max',
             'required_skills', 'category'
         ]
         widgets = {

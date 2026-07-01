@@ -1,7 +1,6 @@
 """Core utility functions."""
 
 import os
-from django.core.files.base import ContentFile
 
 
 def validate_resume_file(file):
@@ -10,17 +9,19 @@ def validate_resume_file(file):
     Returns tuple: (is_valid, error_message)
     """
     from django.conf import settings
-    
+
     # Check file size
     if file.size > settings.MAX_RESUME_SIZE:
-        return False, f"File size exceeds {settings.MAX_RESUME_SIZE / (1024*1024):.1f}MB limit"
-    
+        return False, f"File size exceeds {
+            settings.MAX_RESUME_SIZE / (
+                1024 * 1024):.1f}MB limit"
+
     # Check file extension
     ext = os.path.splitext(file.name)[1].lower().lstrip('.')
     if ext not in settings.ALLOWED_RESUME_EXTENSIONS:
         allowed = ', '.join(settings.ALLOWED_RESUME_EXTENSIONS)
         return False, f"Only {allowed} files are allowed"
-    
+
     return True, None
 
 
@@ -40,7 +41,7 @@ def send_email_task(subject, message, recipient_list):
     This would typically use Celery in production.
     """
     from django.core.mail import send_mail
-    
+
     send_mail(
         subject,
         message,

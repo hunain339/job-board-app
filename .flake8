@@ -1,0 +1,16 @@
+[flake8]
+max-line-length = 88
+exclude =
+    migrations,
+    .git,
+    __pycache__,
+    .env,
+    venv,
+    staticfiles,
+    node_modules,
+    htmlcov,
+    media,
+    supabase
+per-file-ignores =
+    */migrations/*: E501, E402
+    tests/*: S101

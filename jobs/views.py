@@ -49,9 +49,22 @@ class JobViewSet(viewsets.ModelViewSet):
 
     queryset = Job.objects.filter(is_active=True)
     permission_classes = [AllowAny]
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['job_type', 'experience_level', 'is_remote', 'is_featured', 'category']
-    search_fields = ['title', 'description', 'required_skills', 'location', 'employer__company_name']
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter]
+    filterset_fields = [
+        'job_type',
+        'experience_level',
+        'is_remote',
+        'is_featured',
+        'category']
+    search_fields = [
+        'title',
+        'description',
+        'required_skills',
+        'location',
+        'employer__company_name']
     ordering_fields = ['created_at', 'salary_min', 'applications_count', 'views_count']
     ordering = ['-created_at']
     lookup_field = 'slug'
@@ -189,10 +202,14 @@ class JobViewSet(viewsets.ModelViewSet):
         page = self.paginate_queryset(queryset)
 
         if page is not None:
-            serializer = JobDetailSerializer(page, many=True, context={'request': request})
+            serializer = JobDetailSerializer(
+                page, many=True, context={
+                    'request': request})
             return self.get_paginated_response(serializer.data)
 
-        serializer = JobDetailSerializer(queryset, many=True, context={'request': request})
+        serializer = JobDetailSerializer(
+            queryset, many=True, context={
+                'request': request})
         return Response(serializer.data)
 
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])

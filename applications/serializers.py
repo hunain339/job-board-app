@@ -36,16 +36,23 @@ class ApplicationNoteSerializer(serializers.ModelSerializer):
 class ApplicationStatusHistorySerializer(serializers.ModelSerializer):
     """Serializer for application status history."""
 
-    old_status_display = serializers.CharField(source='get_old_status_display', read_only=True)
-    new_status_display = serializers.CharField(source='get_new_status_display', read_only=True)
+    old_status_display = serializers.CharField(
+        source='get_old_status_display', read_only=True)
+    new_status_display = serializers.CharField(
+        source='get_new_status_display', read_only=True)
     changed_by_email = serializers.CharField(source='changed_by.email', read_only=True)
 
     class Meta:
         model = ApplicationStatusHistory
         fields = (
-            'id', 'old_status', 'old_status_display', 'new_status', 'new_status_display',
-            'changed_by_email', 'changed_at', 'reason'
-        )
+            'id',
+            'old_status',
+            'old_status_display',
+            'new_status',
+            'new_status_display',
+            'changed_by_email',
+            'changed_at',
+            'reason')
 
 
 class ApplicationDetailSerializer(serializers.ModelSerializer):
@@ -67,7 +74,8 @@ class ApplicationDetailSerializer(serializers.ModelSerializer):
 
     def get_status_history(self, obj):
         """Required prefetch: status_history."""
-        return ApplicationStatusHistorySerializer(obj.status_history.all(), many=True).data
+        return ApplicationStatusHistorySerializer(
+            obj.status_history.all(), many=True).data
 
 
 class ApplicationCreateSerializer(serializers.ModelSerializer):
@@ -86,7 +94,7 @@ class ApplicationCreateSerializer(serializers.ModelSerializer):
 
         if value.size > settings.MAX_RESUME_SIZE:
             raise serializers.ValidationError(
-                f"File size exceeds {settings.MAX_RESUME_SIZE / (1024*1024):.1f}MB limit"
+                f"File size exceeds {settings.MAX_RESUME_SIZE / (1024 * 1024):.1f}MB limit"
             )
 
         return value

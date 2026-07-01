@@ -71,7 +71,9 @@ class JobApplicationsView(LoginRequiredMixin, ListView):
         if status_filter:
             queryset = queryset.filter(status=status_filter)
 
-        return queryset.prefetch_related('employer_notes__employer', 'status_history__changed_by')
+        return queryset.prefetch_related(
+            'employer_notes__employer',
+            'status_history__changed_by')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -111,9 +113,13 @@ class ApplicationDetailView(LoginRequiredMixin, DetailView):
     def get_queryset(self):
         user = self.request.user
         qs = (
-            Application.objects.select_related('candidate', 'job', 'job__employer', 'job__category')
-            .prefetch_related('employer_notes__employer', 'status_history__changed_by')
-        )
+            Application.objects.select_related(
+                'candidate',
+                'job',
+                'job__employer',
+                'job__category') .prefetch_related(
+                'employer_notes__employer',
+                'status_history__changed_by'))
         if user.role == 'admin':
             return qs
         return qs.filter(Q(candidate=user) | Q(job__employer=user))
@@ -134,15 +140,18 @@ class WithdrawApplicationView(LoginRequiredMixin, View):
 
     def post(self, request, application_id):
         try:
-            application = Application.objects.get(id=application_id, candidate=request.user)
+            application = Application.objects.get(
+                id=application_id, candidate=request.user)
             if application.status == 'applied':
                 application.delete()
                 messages.success(request, 'Application withdrawn successfully.')
             else:
-                messages.error(request, 'Cannot withdraw application that is already being reviewed.')
+                messages.error(
+                    request, 'Cannot withdraw application that is already being reviewed.')
         except Application.DoesNotExist:
             pass  # Already withdrawn or does not exist
         return redirect('applications_views:my_applications')
+
 
 class UpdateApplicationStatusView(LoginRequiredMixin, View):
     """Update application status (employer only)."""
@@ -150,7 +159,10 @@ class UpdateApplicationStatusView(LoginRequiredMixin, View):
     login_url = '/users/login/'
 
     def post(self, request, application_id):
-        application = get_object_or_404(Application, id=application_id, job__employer=request.user)
+        application = get_object_or_404(
+            Application,
+            id=application_id,
+            job__employer=request.user)
         new_status = request.POST.get('status')
         if new_status in dict(Application.STATUS_CHOICES):
             update_application_status(
@@ -159,7 +171,9 @@ class UpdateApplicationStatusView(LoginRequiredMixin, View):
                 status=new_status
             )
             messages.success(request, f'Application status updated to {new_status}.')
-        return redirect('applications_views:job_applications', job_id=application.job.id)
+        return redirect(
+            'applications_views:job_applications',
+            job_id=application.job.id)
 
 
 class UpdateApplicationRatingView(LoginRequiredMixin, View):
@@ -168,7 +182,10 @@ class UpdateApplicationRatingView(LoginRequiredMixin, View):
     login_url = '/users/login/'
 
     def post(self, request, application_id):
-        application = get_object_or_404(Application, id=application_id, job__employer=request.user)
+        application = get_object_or_404(
+            Application,
+            id=application_id,
+            job__employer=request.user)
         try:
             rating = int(request.POST.get('rating', 0))
             if 0 <= rating <= 5:
@@ -177,7 +194,9 @@ class UpdateApplicationRatingView(LoginRequiredMixin, View):
                 messages.success(request, 'Rating updated.')
         except ValueError:
             pass
-        return redirect('applications_views:job_applications', job_id=application.job.id)
+        return redirect(
+            'applications_views:job_applications',
+            job_id=application.job.id)
 
 
 class ViewResumeView(LoginRequiredMixin, View):
@@ -190,11 +209,15 @@ class ViewResumeView(LoginRequiredMixin, View):
         qs = Application.objects.all()
         if user.role != 'admin':
             qs = qs.filter(Q(candidate=user) | Q(job__employer=user))
-        
+
         application = get_object_or_404(qs, id=application_id)
         if not application.resume:
             raise Http404("Resume not found")
-            
-        response = HttpResponse(application.resume.read(), content_type='application/pdf')
-        response['Content-Disposition'] = f'inline; filename="{application.resume.name.split("/")[-1]}"'
+
+        response = HttpResponse(
+            application.resume.read(),
+            content_type='application/pdf')
+        response['Content-Disposition'] = f'inline; filename="{
+            application.resume.name.split("/")[
+                -1]}"'
         return response

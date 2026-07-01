@@ -67,15 +67,30 @@ class Job(BaseModel):
     slug = models.SlugField(unique=True)
     description = models.TextField()
     job_type = models.CharField(max_length=20, choices=JOB_TYPE_CHOICES)
-    category = models.ForeignKey(JobCategory, on_delete=models.SET_NULL, null=True, related_name='jobs')
+    category = models.ForeignKey(
+        JobCategory,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='jobs')
     location = models.CharField(max_length=255)
     is_remote = models.BooleanField(default=False)
-    salary_min = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    salary_max = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    salary_min = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True)
+    salary_max = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True)
     currency = models.CharField(max_length=10, default='USD')
     experience_level = models.CharField(max_length=20, choices=EXPERIENCE_LEVEL_CHOICES)
     required_skills = models.TextField(help_text="Comma-separated skills")
-    employer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posted_jobs')
+    employer = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='posted_jobs')
     is_active = models.BooleanField(default=True)
     is_featured = models.BooleanField(default=False)
     views_count = models.PositiveIntegerField(default=0, db_index=True)
@@ -111,8 +126,6 @@ class Job(BaseModel):
             self.slug = slug
         super().save(*args, **kwargs)
 
-
-
     @property
     def salary_range(self):
         """Get formatted salary range."""
@@ -135,7 +148,10 @@ class Job(BaseModel):
 class JobSavedByUser(models.Model):
     """Track saved jobs by candidates."""
 
-    candidate = models.ForeignKey(User, on_delete=models.CASCADE, related_name='saved_jobs')
+    candidate = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='saved_jobs')
     job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name='saved_by')
     created_at = models.DateTimeField(auto_now_add=True)
 

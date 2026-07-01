@@ -1,7 +1,8 @@
 """Tests for applications app."""
 
 import pytest
-from django.contrib.auth import get_user_model
+
+
 from rest_framework import status
 from django.core.files.uploadedfile import SimpleUploadedFile
 from applications.models import Application
@@ -35,13 +36,21 @@ class TestJobApplication:
     def test_apply_to_job(self, authenticated_client, job):
         """Test applying to a job."""
         data = {
-            'job_id': str(job.id),
-            'resume': SimpleUploadedFile('test.pdf', b'%PDF-1.4\n' + b'a'*1024, content_type='application/pdf'),
+            'job_id': str(
+                job.id),
+            'resume': SimpleUploadedFile(
+                'test.pdf',
+                b'%PDF-1.4\n' +
+                b'a' *
+                1024,
+                content_type='application/pdf'),
             'cover_letter': 'I am interested in this position.',
         }
 
         response = authenticated_client.post('/api/applications/', data)
-        assert response.status_code in [status.HTTP_201_CREATED, status.HTTP_400_BAD_REQUEST]
+        assert response.status_code in [
+            status.HTTP_201_CREATED,
+            status.HTTP_400_BAD_REQUEST]
 
     def test_duplicate_application(self, authenticated_client, job):
         """Test that duplicate applications are prevented."""
@@ -51,13 +60,8 @@ class TestJobApplication:
             resume='test.pdf',
         )
 
-        data = {
-            'job_id': str(job.id),
-            'resume': 'test2.pdf',
-        }
-
-        # This will fail due to file handling, but demonstrates the test structure
-        # In production, use proper file fixtures
+        # Stub: demonstrates duplicate prevention test structure.
+        # In production, use proper file fixtures for full coverage.
 
 
 class TestApplicationManagement:
@@ -123,6 +127,7 @@ class TestApplicationManagement:
         # LoginRequiredMixin may also redirect (302) before ownership check.
         assert response.status_code in (404, 302)
 
-        # Also ensure no data of application candidate is in response body (if it wasn't 404)
+        # Also ensure no data of application candidate is in response body (if it
+        # wasn't 404)
         if response.status_code == 200:
             assert application.candidate.email not in str(response.content)

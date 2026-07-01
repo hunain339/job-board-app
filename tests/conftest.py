@@ -4,24 +4,25 @@ import pytest
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 from factory.django import DjangoModelFactory
-from factory import Sequence, SubFactory, Faker
+from factory import Sequence, Faker
+
 
 User = get_user_model()
 
 
 class UserFactory(DjangoModelFactory):
     """Factory for creating test users."""
-    
+
     class Meta:
         model = User
-    
+
     email = Faker('email')
     username = Faker('user_name')
     first_name = 'Test'
     last_name = 'User'
     role = 'candidate'
     is_active = True
-    
+
     @classmethod
     def _create(cls, model_class, *args, **kwargs):
         """Override the default _create to set password."""

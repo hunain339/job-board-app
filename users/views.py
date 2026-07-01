@@ -19,10 +19,10 @@ from .services import (
     approve_employer,
     authenticate_with_email,
     change_user_password,
-    issue_tokens_for_user,
     reject_employer,
     verify_user_email,
 )
+
 
 User = get_user_model()
 
@@ -32,7 +32,10 @@ class UserViewSet(viewsets.ModelViewSet):
 
     queryset = User.objects.all()
     permission_classes = [IsAuthenticated]
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter]
     filterset_fields = ['role', 'is_active', 'is_approved_employer']
     search_fields = ['email', 'first_name', 'last_name', 'company_name']
     ordering_fields = ['date_joined', 'email']
@@ -50,7 +53,11 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         """Set permissions based on action."""
-        if self.action in ['create', 'register_candidate', 'register_employer', 'verify_email']:
+        if self.action in [
+            'create',
+            'register_candidate',
+            'register_employer',
+                'verify_email']:
             return [AllowAny()]
         if self.action in ['retrieve', 'list']:
             return [IsAuthenticated()]
@@ -102,13 +109,16 @@ class UserViewSet(viewsets.ModelViewSet):
         """Verify email using token."""
         token = request.data.get('token')
         if not token:
-            return Response({'detail': 'Token is required.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'detail': 'Token is required.'},
+                            status=status.HTTP_400_BAD_REQUEST)
 
         from .models import EmailVerificationToken
         try:
-            verification_token = EmailVerificationToken.objects.get(token=token, is_used=False)
+            verification_token = EmailVerificationToken.objects.get(
+                token=token, is_used=False)
         except EmailVerificationToken.DoesNotExist:
-            return Response({'detail': 'Invalid or expired token.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'detail': 'Invalid or expired token.'},
+                            status=status.HTTP_400_BAD_REQUEST)
 
         verify_user_email(verification_token=verification_token)
         return Response({'detail': 'Email verified successfully.'})
@@ -148,12 +158,14 @@ class UserViewSet(viewsets.ModelViewSet):
         try:
             refresh_token = request.data.get('refresh')
             if not refresh_token:
-                return Response({'detail': 'Refresh token is required.'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'detail': 'Refresh token is required.'},
+                                status=status.HTTP_400_BAD_REQUEST)
 
             from rest_framework_simplejwt.tokens import RefreshToken
             token = RefreshToken(refresh_token)
             token.blacklist()
-            return Response({'detail': 'Successfully logged out.'}, status=status.HTTP_200_OK)
+            return Response({'detail': 'Successfully logged out.'},
+                            status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -212,7 +224,8 @@ class EmailTokenObtainPairView(views.APIView):
 
     def post(self, request, *args, **kwargs):
         """Obtain JWT token using email and password."""
-        serializer = EmailTokenObtainPairSerializer(data=request.data, context={'request': request})
+        serializer = EmailTokenObtainPairSerializer(
+            data=request.data, context={'request': request})
         if serializer.is_valid():
             return Response(serializer.validated_data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_401_UNAUTHORIZED)

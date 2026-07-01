@@ -16,19 +16,36 @@ class JobListSerializer(serializers.ModelSerializer):
     """Serializer for job list view."""
 
     employer_email = serializers.CharField(source='employer.email', read_only=True)
-    employer_company = serializers.CharField(source='employer.company_name', read_only=True)
-    job_type_display = serializers.CharField(source='get_job_type_display', read_only=True)
-    experience_display = serializers.CharField(source='get_experience_level_display', read_only=True)
+    employer_company = serializers.CharField(
+        source='employer.company_name', read_only=True)
+    job_type_display = serializers.CharField(
+        source='get_job_type_display', read_only=True)
+    experience_display = serializers.CharField(
+        source='get_experience_level_display', read_only=True)
     is_saved = serializers.SerializerMethodField()
 
     class Meta:
         model = Job
         fields = (
-            'id', 'title', 'slug', 'job_type', 'job_type_display',
-            'location', 'is_remote', 'salary_min', 'salary_max', 'currency',
-            'experience_level', 'experience_display', 'employer_email', 'employer_company',
-            'created_at', 'is_featured', 'views_count', 'applications_count', 'is_saved'
-        )
+            'id',
+            'title',
+            'slug',
+            'job_type',
+            'job_type_display',
+            'location',
+            'is_remote',
+            'salary_min',
+            'salary_max',
+            'currency',
+            'experience_level',
+            'experience_display',
+            'employer_email',
+            'employer_company',
+            'created_at',
+            'is_featured',
+            'views_count',
+            'applications_count',
+            'is_saved')
 
     def get_is_saved(self, obj):
         """Check if job is saved by current user."""
@@ -48,10 +65,14 @@ class JobDetailSerializer(serializers.ModelSerializer):
 
     category = JobCategorySerializer(read_only=True)
     employer_email = serializers.CharField(source='employer.email', read_only=True)
-    employer_company = serializers.CharField(source='employer.company_name', read_only=True)
-    employer_logo = serializers.ImageField(source='employer.company_logo', read_only=True)
-    job_type_display = serializers.CharField(source='get_job_type_display', read_only=True)
-    experience_display = serializers.CharField(source='get_experience_level_display', read_only=True)
+    employer_company = serializers.CharField(
+        source='employer.company_name', read_only=True)
+    employer_logo = serializers.ImageField(
+        source='employer.company_logo', read_only=True)
+    job_type_display = serializers.CharField(
+        source='get_job_type_display', read_only=True)
+    experience_display = serializers.CharField(
+        source='get_experience_level_display', read_only=True)
     is_saved = serializers.SerializerMethodField()
     applications = serializers.SerializerMethodField()
 
@@ -120,7 +141,8 @@ class JobCreateUpdateSerializer(serializers.ModelSerializer):
     def validate_description(self, value):
         """Validate job description."""
         if len(value) < 50:
-            raise serializers.ValidationError("Description must be at least 50 characters.")
+            raise serializers.ValidationError(
+                "Description must be at least 50 characters.")
         return value
 
 

@@ -28,8 +28,10 @@ class JobListView(ListView):
         experience = self.request.GET.get('experience', '')
         is_remote = self.request.GET.get('is_remote', '')
 
-        queryset = Job.objects.filter(is_active=True).select_related('employer', 'category')
-        
+        queryset = Job.objects.filter(
+            is_active=True).select_related(
+            'employer', 'category')
+
         if query:
             queryset = queryset.filter(
                 Q(title__icontains=query)
@@ -50,7 +52,7 @@ class JobListView(ListView):
 
         if is_remote == 'true':
             queryset = queryset.filter(is_remote=True)
-            
+
         return queryset.order_by('-created_at')
 
     def get_context_data(self, **kwargs):

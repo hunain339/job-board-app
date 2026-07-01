@@ -9,7 +9,8 @@ from jobs.services import increment_job_applications, decrement_job_applications
 @transaction.atomic
 def create_application(*, candidate, job, **validated_data):
     """Create an application and update the related job counter."""
-    application = Application.objects.create(candidate=candidate, job=job, **validated_data)
+    application = Application.objects.create(
+        candidate=candidate, job=job, **validated_data)
     increment_job_applications(job=job)
     return application
 

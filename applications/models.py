@@ -23,12 +23,26 @@ class Application(BaseModel):
     )
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    candidate = models.ForeignKey(User, on_delete=models.CASCADE, related_name='applications')
-    job = models.ForeignKey('jobs.Job', on_delete=models.CASCADE, related_name='applications')
+    candidate = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='applications')
+    job = models.ForeignKey(
+        'jobs.Job',
+        on_delete=models.CASCADE,
+        related_name='applications')
     resume = models.FileField(
         upload_to='resumes/',
-        validators=[SecureFileValidator(allowed_extensions=['pdf', 'png', 'jpg', 'jpeg', 'doc', 'docx'], max_size_mb=5)]
-    )
+        validators=[
+            SecureFileValidator(
+                allowed_extensions=[
+                    'pdf',
+                    'png',
+                    'jpg',
+                    'jpeg',
+                    'doc',
+                    'docx'],
+                max_size_mb=5)])
     cover_letter = models.TextField(blank=True, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='applied')
     rejection_reason = models.TextField(blank=True, null=True)
@@ -57,12 +71,13 @@ class Application(BaseModel):
         return timezone.now() - self.created_at < timedelta(days=7)
 
 
-
-
 class ApplicationNote(models.Model):
     """Notes on applications by employer."""
 
-    application = models.ForeignKey(Application, on_delete=models.CASCADE, related_name='employer_notes')
+    application = models.ForeignKey(
+        Application,
+        on_delete=models.CASCADE,
+        related_name='employer_notes')
     employer = models.ForeignKey(User, on_delete=models.CASCADE)
     note = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
@@ -80,7 +95,10 @@ class ApplicationNote(models.Model):
 class ApplicationStatusHistory(models.Model):
     """Track status changes for applications."""
 
-    application = models.ForeignKey(Application, on_delete=models.CASCADE, related_name='status_history')
+    application = models.ForeignKey(
+        Application,
+        on_delete=models.CASCADE,
+        related_name='status_history')
     old_status = models.CharField(max_length=20, choices=Application.STATUS_CHOICES)
     new_status = models.CharField(max_length=20, choices=Application.STATUS_CHOICES)
     changed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
@@ -93,4 +111,7 @@ class ApplicationStatusHistory(models.Model):
         verbose_name_plural = 'Application Status Histories'
 
     def __str__(self):
-        return f"{self.application} status changed from {self.old_status} to {self.new_status}"
+        return f"{
+            self.application} status changed from {
+            self.old_status} to {
+            self.new_status}"

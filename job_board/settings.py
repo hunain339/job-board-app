@@ -51,7 +51,8 @@ def database_from_url(database_url):
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
-# config() reads from environment variables first, then .env — no default means it hard-crashes if missing.
+# config() reads from environment variables first, then .env — no default
+# means it hard-crashes if missing.
 SECRET_KEY = config("SECRET_KEY")  # required — no fallback
 DEBUG = config_bool("DEBUG", default=False)
 ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="localhost,127.0.0.1", cast=Csv())
