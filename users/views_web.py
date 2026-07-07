@@ -156,10 +156,24 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                     'total_applications_count': Application.objects.filter(
                         job__employer=user
                     ).count(),
+                    'reviewing_count': Application.objects.filter(
+                        job__employer=user, status='reviewing'
+                    ).count(),
+                    'hired_count': Application.objects.filter(
+                        job__employer=user, status='hired'
+                    ).count(),
                 },
                 300,
             )
             context.update(counts)
+            context['active_jobs'] = cache.get_or_set(
+                f'dashboard_employer_activejobs_{user.id}',
+                lambda: list(
+                    Job.objects.filter(employer=user, is_active=True)
+                    .order_by('-created_at')[:5]
+                ),
+                300,
+            )
             context['recent_applications'] = cache.get_or_set(
                 f'dashboard_employer_recent_{user.id}',
                 lambda: list(
